@@ -2,9 +2,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { GuestRoute } from "./GuestRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AuthPage } from "../../features/auth/pages/AuthPage";
-import { DashboardPage } from "../../pages/DashboardPage";
+import { DashboardPage } from "../../pages/Dashboard/DashboardPage";
 import { AppLayout } from "../../components/layout/AppLayout";
-import { NotFoundPage } from "../../pages/NotFoundPage";
+import { NotFoundPage } from "../../pages/NotFound/NotFoundPage";
 
 export function AppRouter() {
   return (

@@ -17,6 +17,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { isFirebaseConfigured } from "../../../shared/firebase/firebase";
 import { useAuth } from "../context/AuthContext";
+import { authMessages } from "../content/authMessages";
+import { commonText } from "../../../shared/content/common";
 
 type FormValues = { displayName?: string; email: string; password: string };
 
@@ -33,11 +35,11 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
   const schema = z
     .object({
       displayName: z.string().optional(),
-      email: z.email("Enter a valid email address."),
+      email: z.email(authMessages.validation.invalidEmail),
       password:
         mode === "login"
-          ? z.string().min(1, "Enter your password.")
-          : z.string().min(6, "Use at least 6 characters."),
+          ? z.string().min(1, authMessages.validation.passwordRequired)
+          : z.string().min(6, authMessages.validation.passwordTooShort),
     })
     .superRefine((values, context) => {
       if (
@@ -47,7 +49,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         context.addIssue({
           code: "custom",
           path: ["displayName"],
-          message: "Enter at least 2 characters.",
+          message: authMessages.validation.nameTooShort,
         });
       }
     });
@@ -63,7 +65,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
   });
 
   const title =
-    mode === "login" ? "Welcome aboard" : "Join the next expedition";
+    mode === "login" ? authMessages.login.title : authMessages.register.title;
 
   async function onSubmit(values: FormValues) {
     setBusy(true);
@@ -83,14 +85,14 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
           values.email,
           values.password,
         );
-        
+
         navigate("/dashboard", { replace: true });
       }
     } catch (error) {
       setFormError(
         error instanceof Error
           ? error.message
-          : "Unable to continue. Please try again.",
+          : authMessages.errors.unableToContinue,
       );
     } finally {
       setBusy(false);
@@ -102,9 +104,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     const validEmail = z.email().safeParse(email);
 
     if (!validEmail.success) {
-      setFormError(
-        "Enter your email address first, then choose “Forgot password?”.",
-      );
+      setFormError(authMessages.passwordReset.emailRequired);
       return;
     }
 
@@ -113,12 +113,12 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
 
     try {
       await sendPasswordReset(email);
-      setNotice(
-        "If an account exists for that email, a password reset link is on its way.",
-      );
+      setNotice(authMessages.passwordReset.success);
     } catch (error) {
       setFormError(
-        error instanceof Error ? error.message : "Could not send reset email.",
+        error instanceof Error
+          ? error.message
+          : authMessages.passwordReset.error,
       );
     } finally {
       setBusy(false);
@@ -154,12 +154,10 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
             color="secondary.main"
             sx={{ display: "block", letterSpacing: ".18em" }}
           >
-            A FIELD GUIDE FOR THE GALAXY
+            {commonText.tagline}
           </Typography>
           <Typography variant="h4" component="h1" fontWeight={800}>
-            The Hitchhiker’s
-            <br />
-            Field Guide
+            {commonText.appName}
           </Typography>
         </Box>
         <Card elevation={8}>
@@ -171,14 +169,13 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
                 </Typography>
                 <Typography color="text.secondary">
                   {mode === "login"
-                    ? "Your next stop is waiting."
-                    : "Every great trip starts somewhere."}
+                    ? authMessages.login.description
+                    : authMessages.register.description}
                 </Typography>
               </Box>
               {!isFirebaseConfigured && (
                 <Alert severity="warning">
-                  Firebase is not configured yet. Add the project values to{" "}
-                  <code>.env.local</code> to enable account actions.
+                  {authMessages.errors.firebaseNotConfigured}
                 </Alert>
               )}
               {formError && (
@@ -232,10 +229,10 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
                     endIcon={<Send size={17} />}
                   >
                     {busy
-                      ? "Preparing…"
+                      ? authMessages.submitting
                       : mode === "login"
-                        ? "Sign in"
-                        : "Create traveler account"}
+                        ? authMessages.login.submit
+                        : authMessages.register.submit}
                   </Button>
                 </Stack>
               </Box>
@@ -246,24 +243,26 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
                   disabled={busy || !isFirebaseConfigured}
                   sx={{ alignSelf: "flex-start", px: 0 }}
                 >
-                  Forgot password?
+                  {authMessages.passwordReset.action}
                 </Button>
               )}
               <Typography variant="body2" color="text.secondary">
                 {mode === "login"
-                  ? "New to this corner of space? "
-                  : "Already have an account? "}
+                  ? authMessages.login.switchPrompt
+                  : authMessages.register.switchPrompt}{" "}
                 <Link
                   component={RouterLink}
                   to={mode === "login" ? "/register" : "/login"}
                   underline="hover"
                   color="primary.main"
                 >
-                  {mode === "login" ? "Create an account" : "Sign in"}
+                  {mode === "login"
+                    ? authMessages.login.switchLink
+                    : authMessages.register.switchLink}
                 </Link>
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Don’t panic. Keep your towel close.
+                {authMessages.footer}
               </Typography>
             </Stack>
           </CardContent>

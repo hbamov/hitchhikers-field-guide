@@ -1,5 +1,6 @@
 import { Button, Stack, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { notFoundMessages } from "./notFoundMessages";
 
 export function NotFoundPage() {
   return (
@@ -14,16 +15,16 @@ export function NotFoundPage() {
       }}
     >
       <Typography variant="overline" color="secondary.main">
-        COORDINATES NOT FOUND
+        {notFoundMessages.title}
       </Typography>
       <Typography variant="h2" component="h1">
-        This route is mostly harmless.
+        {notFoundMessages.subTitle}
       </Typography>
       <Typography color="text.secondary">
-        The page you’re looking for is not in this edition of the guide.
+        {notFoundMessages.description}
       </Typography>
       <Button component={RouterLink} to="/dashboard" variant="contained">
-        Return to your dashboard
+        {notFoundMessages.returnToDashboard}
       </Button>
     </Stack>
   );
