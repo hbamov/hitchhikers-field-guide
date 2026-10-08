@@ -9,6 +9,7 @@ import {
 import { LogOut, Orbit } from "lucide-react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../features/auth/context/AuthContext";
+import { NavLink } from "react-router-dom";
 
 export function AppLayout() {
   const { user, signOutUser } = useAuth();
@@ -39,6 +40,29 @@ export function AppLayout() {
           >
             The Hitchhiker’s Field Guide
           </Typography>
+          <nav className="flex items-center gap-6">
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                isActive
+                  ? "text-amber-400"
+                  : "text-slate-400 hover:text-slate-100"
+              }
+            >
+              Dashboard
+            </NavLink>
+
+            <NavLink
+              to="/guide"
+              className={({ isActive }) =>
+                isActive
+                  ? "text-amber-400"
+                  : "text-slate-400 hover:text-slate-100"
+              }
+            >
+              Guide
+            </NavLink>
+          </nav>
           <Typography
             variant="body2"
             color="text.secondary"

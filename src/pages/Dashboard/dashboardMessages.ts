@@ -7,7 +7,7 @@ export const dashboardMessages = {
 
   description: "Your guide is ready. Your destination may or may not be.",
 
-  featuredDestination: "Featured destination",
+  featuredDestination: "Featured guide entry",
 
   checklist: {
     title: "Travel checklist",

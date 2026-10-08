@@ -5,6 +5,7 @@ import { AuthPage } from "../../features/auth/pages/AuthPage";
 import { DashboardPage } from "../../pages/Dashboard/DashboardPage";
 import { AppLayout } from "../../components/layout/AppLayout";
 import { NotFoundPage } from "../../pages/NotFound/NotFoundPage";
+import { GuidePage } from "../../features/guide/pages/GuidePage";
 
 export function AppRouter() {
   return (
@@ -16,6 +17,7 @@ export function AppRouter() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/guide" element={<GuidePage />} />
         </Route>
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
