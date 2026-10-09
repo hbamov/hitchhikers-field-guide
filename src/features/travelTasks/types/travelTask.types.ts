@@ -34,3 +34,19 @@ export interface TravelTaskDoc {
   updatedAt: Timestamp;
   completedAt?: Timestamp;
 }
+
+export interface CreateTravelTaskInput {
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  dueDate?: Date;
+}
+
+export interface UpdateTravelTaskInput {
+  title?: string;
+  description?: string;
+  priority?: TaskPriority;
+  dueDate?: Date | null;
+  status?: TaskStatus;
+  completedAt?: Date | null;
+}

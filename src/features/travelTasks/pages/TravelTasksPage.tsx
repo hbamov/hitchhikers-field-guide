@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import {
   Alert,
   Button,
@@ -5,24 +6,53 @@ import {
   CardContent,
   CircularProgress,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import { Plus } from "lucide-react";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useTravelTasks } from "../hooks/useTravelTasks";
+import { useUpdateTravelTask } from "../hooks/useUpdateTravelTask";
 import { TravelTaskCard } from "../components/TravelTaskCard/TravelTaskCard";
+import { CreateTravelTaskDialog } from "../components/CreateTravelTaskDialog/CreateTravelTaskDialog";
+import { EditTravelTaskDialog } from "../components/EditTravelTaskDialog/EditTravelTaskDialog";
+import { DeleteTaskDialog } from "../components/DeleteTaskDialog/DeleteTaskDialog";
+import type { TaskStatus, TravelTask } from "../types/travelTask.types";
+
+type StatusFilter = "all" | TaskStatus;
 
 export function TravelTasksPage() {
   const { user } = useAuth();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<TravelTask | null>(null);
+  const [deletingTask, setDeletingTask] = useState<TravelTask | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const {
     data: tasks = [],
     isLoading,
     isError,
-    error,
     refetch,
   } = useTravelTasks(user?.uid);
+  const updateTaskMutation = useUpdateTravelTask(user?.uid);
 
-  console.info("Debug Error:", error);
+  const filteredTasks = useMemo(() => {
+    if (statusFilter === "all") return tasks;
+    return tasks.filter((task) => task.status === statusFilter);
+  }, [tasks, statusFilter]);
+
+  async function handleToggleStatus(task: TravelTask) {
+    const nextStatus: TaskStatus =
+      task.status === "open" ? "completed" : "open";
+    await updateTaskMutation.mutateAsync({
+      taskId: task.id,
+      input: {
+        status: nextStatus,
+        completedAt: nextStatus === "completed" ? new Date() : null,
+      },
+    });
+  }
 
   return (
     <Stack spacing={3}>
@@ -42,6 +72,29 @@ export function TravelTasksPage() {
         </Typography>
       </Stack>
 
+      <Button
+        variant="contained"
+        startIcon={<Plus size={16} />}
+        onClick={() => setCreateOpen(true)}
+        sx={{ alignSelf: "flex-start" }}
+      >
+        Add checklist item
+      </Button>
+
+      <ToggleButtonGroup
+        value={statusFilter}
+        exclusive
+        onChange={(_, next: StatusFilter | null) => {
+          if (next) setStatusFilter(next);
+        }}
+        size="small"
+        aria-label="Task status filter"
+      >
+        <ToggleButton value="all">All</ToggleButton>
+        <ToggleButton value="open">Open</ToggleButton>
+        <ToggleButton value="completed">Completed</ToggleButton>
+      </ToggleButtonGroup>
+
       {isLoading ? (
         <Card>
           <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -60,18 +113,46 @@ export function TravelTasksPage() {
         >
           We couldn’t load your checklist right now. Please try again.
         </Alert>
-      ) : tasks.length === 0 ? (
+      ) : filteredTasks.length === 0 ? (
         <Alert severity="info">
-          Your checklist is empty. Add your first item to start planning the
-          journey.
+          {tasks.length === 0
+            ? "Your checklist is empty. Add your first item to start planning the journey."
+            : "No items match this filter."}
         </Alert>
       ) : (
         <Stack spacing={1.5}>
-          {tasks.map((task) => (
-            <TravelTaskCard key={task.id} task={task} />
+          {filteredTasks.map((task) => (
+            <TravelTaskCard
+              key={task.id}
+              task={task}
+              onToggleStatus={handleToggleStatus}
+              onEdit={setEditingTask}
+              onDelete={setDeletingTask}
+              busy={updateTaskMutation.isPending}
+            />
           ))}
         </Stack>
       )}
+
+      <CreateTravelTaskDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        userId={user?.uid}
+      />
+
+      <EditTravelTaskDialog
+        open={Boolean(editingTask)}
+        onClose={() => setEditingTask(null)}
+        userId={user?.uid}
+        task={editingTask}
+      />
+
+      <DeleteTaskDialog
+        open={Boolean(deletingTask)}
+        onClose={() => setDeletingTask(null)}
+        userId={user?.uid}
+        task={deletingTask}
+      />
     </Stack>
   );
 }
