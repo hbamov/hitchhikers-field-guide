@@ -62,6 +62,16 @@ export function AppLayout() {
             >
               Guide
             </NavLink>
+            <NavLink
+              to="/tasks"
+              className={({ isActive }) =>
+                isActive
+                  ? "text-amber-400"
+                  : "text-slate-400 hover:text-slate-100"
+              }
+            >
+              Tasks
+            </NavLink>
           </nav>
           <Typography
             variant="body2"
