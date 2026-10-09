@@ -1,22 +1,30 @@
+import { Card, CardContent, Skeleton, Stack } from "@mui/material";
+
 export function GuideCardSkeleton() {
   return (
-    <div
-      aria-hidden="true"
-      className="flex h-full animate-pulse flex-col rounded-2xl border border-slate-700 bg-slate-800/80 p-6"
-    >
-      <div className="mb-5 flex items-center justify-between">
-        <div className="h-4 w-20 rounded bg-slate-700" />
-        <div className="h-6 w-24 rounded-full bg-slate-700" />
-      </div>
-      <div className="h-7 w-2/3 rounded bg-slate-700" />
-      <div className="mt-4 space-y-2">
-        <div className="h-4 w-full rounded bg-slate-700" />
-        <div className="h-4 w-5/6 rounded bg-slate-700" />
-      </div>
-      <div className="mt-6 flex gap-2">
-        <div className="h-6 w-14 rounded bg-slate-700" />
-        <div className="h-6 w-14 rounded bg-slate-700" />
-      </div>
-    </div>
+    <Card aria-hidden="true" sx={{ height: "100%" }}>
+      <CardContent sx={{ p: 3 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2.5}
+        >
+          <Skeleton variant="rounded" width={90} height={20} />
+          <Skeleton variant="rounded" width={120} height={24} />
+        </Stack>
+
+        <Skeleton variant="rounded" width="70%" height={32} />
+        <Stack spacing={1} mt={2}>
+          <Skeleton variant="rounded" width="100%" height={18} />
+          <Skeleton variant="rounded" width="85%" height={18} />
+        </Stack>
+
+        <Stack direction="row" spacing={1} mt={3}>
+          <Skeleton variant="rounded" width={60} height={24} />
+          <Skeleton variant="rounded" width={60} height={24} />
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }

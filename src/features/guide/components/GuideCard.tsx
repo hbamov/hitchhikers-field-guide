@@ -1,5 +1,13 @@
 import { CircleHelp, Cpu, Fish, Globe2, MapPin, Package } from "lucide-react";
-
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Stack,
+  Typography,
+} from "@mui/material";
 import type { GuideCategory, GuideEntry } from "../types/guide.types";
 
 interface GuideCardProps {
@@ -27,42 +35,77 @@ export function GuideCard({ entry }: GuideCardProps) {
   const Icon = categoryIcons[entry.category] ?? CircleHelp;
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-slate-700 bg-slate-800/80 p-6 transition hover:border-slate-500">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-sm uppercase tracking-wider text-teal-400">
-          <Icon size={18} aria-hidden="true" />
-
-          <span>{entry.category}</span>
-        </div>
-
-        <span className="rounded-full border border-slate-600 px-3 py-1 text-xs uppercase tracking-wide text-slate-300">
-          {classificationLabels[entry.classification]}
-        </span>
-      </div>
-
-      <h2 className="text-2xl font-medium text-slate-100">{entry.name}</h2>
-
-      <p className="mt-3 flex-1 leading-7 text-slate-400">{entry.summary}</p>
-
-      <div className="mt-6 flex flex-wrap gap-2">
-        {entry.tags.slice(0, 3).map((tag) => (
-          <span
-            key={tag}
-            className="rounded-md bg-slate-900/60 px-2.5 py-1 text-xs text-slate-400"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        disabled
-        className="mt-6 self-start text-sm font-medium text-amber-400 opacity-70"
-        title="Guide entry details will be available in a future phase"
+    <Card
+      sx={{
+        height: "100%",
+        borderColor: "rgba(255,255,255,0.12)",
+        transition: "border-color 200ms ease",
+        "&:hover": { borderColor: "rgba(255,255,255,0.28)" },
+      }}
+    >
+      <CardContent
+        sx={{ p: 3, display: "flex", flexDirection: "column", height: "100%" }}
       >
-        Full entry coming soon
-      </button>
-    </article>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          gap={2}
+          mb={2.5}
+        >
+          <Stack direction="row" alignItems="center" gap={1}>
+            <Box
+              sx={{ color: "secondary.main", display: "inline-flex" }}
+              aria-hidden="true"
+            >
+              <Icon size={18} />
+            </Box>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "secondary.main",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {entry.category}
+            </Typography>
+          </Stack>
+
+          <Chip
+            size="small"
+            variant="outlined"
+            label={classificationLabels[entry.classification]}
+            sx={{ textTransform: "uppercase", letterSpacing: "0.04em" }}
+          />
+        </Stack>
+
+        <Typography variant="h5" component="h2">
+          {entry.name}
+        </Typography>
+
+        <Typography
+          color="text.secondary"
+          sx={{ mt: 1.5, flexGrow: 1, lineHeight: 1.7 }}
+        >
+          {entry.summary}
+        </Typography>
+
+        <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 2.5 }}>
+          {entry.tags.slice(0, 3).map((tag) => (
+            <Chip key={tag} size="small" label={tag} variant="outlined" />
+          ))}
+        </Stack>
+
+        <Button
+          type="button"
+          disabled
+          sx={{ mt: 2.5, alignSelf: "flex-start", px: 0 }}
+          title="Guide entry details will be available in a future phase"
+        >
+          Full entry coming soon
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

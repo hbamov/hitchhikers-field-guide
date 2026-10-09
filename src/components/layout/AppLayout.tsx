@@ -3,21 +3,28 @@ import {
   Box,
   Button,
   Container,
+  Stack,
   Toolbar,
   Typography,
 } from "@mui/material";
 import { LogOut, Orbit } from "lucide-react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../features/auth/context/AuthContext";
-import { NavLink } from "react-router-dom";
+
+const navItems = [
+  { label: "Dashboard", to: "/dashboard" },
+  { label: "Guide", to: "/guide" },
+];
 
 export function AppLayout() {
   const { user, signOutUser } = useAuth();
   const navigate = useNavigate();
+
   async function handleSignOut() {
     await signOutUser();
     navigate("/login", { replace: true });
   }
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <AppBar
@@ -31,55 +38,50 @@ export function AppLayout() {
             width: "100%",
             mx: "auto",
             px: { xs: 2, sm: 3 },
+            gap: 2,
           }}
         >
           <Orbit color="#f2c14e" aria-hidden="true" />
-          <Typography
-            variant="subtitle1"
-            sx={{ ml: 1.2, flexGrow: 1, fontWeight: 750 }}
-          >
+          <Typography variant="subtitle1" sx={{ fontWeight: 750 }}>
             The Hitchhiker’s Field Guide
           </Typography>
-          <nav className="flex items-center gap-6">
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-amber-400"
-                  : "text-slate-400 hover:text-slate-100"
-              }
-            >
-              Dashboard
-            </NavLink>
 
-            <NavLink
-              to="/guide"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-amber-400"
-                  : "text-slate-400 hover:text-slate-100"
-              }
-            >
-              Guide
-            </NavLink>
-            <NavLink
-              to="/tasks"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-amber-400"
-                  : "text-slate-400 hover:text-slate-100"
-              }
-            >
-              Tasks
-            </NavLink>
-          </nav>
+          <Box sx={{ flexGrow: 1 }} />
+
+          <Stack
+            direction="row"
+            spacing={1}
+            component="nav"
+            aria-label="Primary"
+          >
+            {navItems.map((item) => (
+              <Button
+                key={item.to}
+                component={NavLink}
+                to={item.to}
+                color="inherit"
+                sx={{
+                  px: 1.5,
+                  minWidth: 0,
+                  color: "text.secondary",
+                  "&.active": {
+                    color: "secondary.main",
+                  },
+                }}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </Stack>
+
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ display: { xs: "none", sm: "block" }, mr: 2 }}
+            sx={{ display: { xs: "none", sm: "block" }, ml: 1 }}
           >
             {user?.displayName}
           </Typography>
+
           <Button
             color="inherit"
             onClick={handleSignOut}
@@ -90,6 +92,7 @@ export function AppLayout() {
           </Button>
         </Toolbar>
       </AppBar>
+
       <Container maxWidth="md" sx={{ py: { xs: 5, sm: 8 } }}>
         <Outlet />
       </Container>

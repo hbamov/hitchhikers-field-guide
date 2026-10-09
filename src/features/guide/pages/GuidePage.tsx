@@ -1,17 +1,23 @@
 import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
-
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { GuideCard } from "../components/GuideCard";
+import { GuideCardSkeleton } from "../components/GuideCardSkeleton/GuideCardSkeleton";
 import type { GuideCategory } from "../types/guide.types";
 import { useGuideEntries } from "../hooks/useGuideEntries";
-import { GuideCardSkeleton } from "../components/GuideCardSkeleton/GuideCardSkeleton";
 
 type CategoryFilter = "all" | GuideCategory;
 
-const categoryFilters: {
-  label: string;
-  value: CategoryFilter;
-}[] = [
+const categoryFilters: { label: string; value: CategoryFilter }[] = [
   { label: "All", value: "all" },
   { label: "Planets", value: "planet" },
   { label: "Species", value: "species" },
@@ -58,173 +64,161 @@ export function GuidePage() {
 
   const hasActiveFilters = search.trim() !== "" || selectedCategory !== "all";
 
-  if (isLoading) {
-    return (
-      <main className="mx-auto w-full max-w-6xl px-6 py-6" aria-busy="true">
-        <p role="status" className="sr-only">
-          Consulting the Guide...
-        </p>
-        <div className="grid gap-5 md:grid-cols-2">
-          {Array.from({ length: 4 }, (_, i) => (
-            <GuideCardSkeleton key={i} />
-          ))}
-        </div>
-      </main>
-    );
-  }
-
-  if (isError) {
-    console.error("Failed to load guide entries:", error);
-
-    return (
-      <main className="mx-auto w-full max-w-6xl px-6 py-12 lg:py-16">
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-8">
-          <h1 className="text-xl font-medium text-slate-100">
-            The Guide is temporarily unavailable
-          </h1>
-
-          <p className="mt-2 text-slate-400">
-            Something went wrong while retrieving the collected knowledge of the
-            galaxy.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="mt-6 rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200"
-          >
-            Try again
-          </button>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-6 lg:py-6">
-      <section>
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-teal-400">
+    <Stack spacing={4}>
+      <Box>
+        <Typography
+          variant="overline"
+          sx={{
+            color: "secondary.main",
+            letterSpacing: ".18em",
+            fontWeight: 600,
+          }}
+        >
           Galactic database
-        </p>
+        </Typography>
 
-        <h1 className="mt-3 text-4xl font-medium tracking-tight text-slate-100 md:text-5xl">
+        <Typography variant="h3" component="h1" sx={{ mt: 1 }}>
           The Guide
-        </h1>
+        </Typography>
 
-        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-400">
+        <Typography color="text.secondary" sx={{ mt: 1.5, maxWidth: 760 }}>
           Search the collected knowledge of the galaxy. Accuracy, completeness
           and personal safety are not guaranteed.
-        </p>
-      </section>
+        </Typography>
+      </Box>
 
-      <section className="mt-10" aria-label="Search and filter Guide entries">
-        <div className="relative">
-          <Search
-            size={20}
-            aria-hidden="true"
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
-          />
+      <Stack spacing={2} aria-label="Search and filter Guide entries">
+        <TextField
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search planets, species, places..."
+          fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={18} />
+              </InputAdornment>
+            ),
+            endAdornment: search ? (
+              <InputAdornment position="end">
+                <Button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label="Clear search"
+                  size="small"
+                  sx={{ minWidth: 0, p: 0.5 }}
+                >
+                  <X size={18} />
+                </Button>
+              </InputAdornment>
+            ) : undefined,
+          }}
+        />
 
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search planets, species, places..."
-            className="w-full rounded-xl border border-slate-700 bg-slate-900 py-4 pl-12 pr-12 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-teal-500"
-          />
-
-          {search && (
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              aria-label="Clear search"
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-200"
-            >
-              <X size={20} />
-            </button>
-          )}
-        </div>
-
-        <div className="mt-5 flex flex-wrap gap-2">
+        <Stack direction="row" flexWrap="wrap" gap={1}>
           {categoryFilters.map((category) => {
-            const isSelected = selectedCategory === category.value;
-
+            const selected = selectedCategory === category.value;
             return (
-              <button
+              <Chip
                 key={category.value}
-                type="button"
+                label={category.label}
+                clickable
+                color={selected ? "secondary" : "default"}
+                variant={selected ? "filled" : "outlined"}
                 onClick={() => setSelectedCategory(category.value)}
-                className={`rounded-full border px-4 py-2 text-sm transition ${
-                  isSelected
-                    ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                    : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200"
-                }`}
-              >
-                {category.label}
-              </button>
+              />
             );
           })}
-        </div>
-      </section>
+        </Stack>
+      </Stack>
 
-      <section className="mt-10">
-        <div className="mb-5 flex items-center justify-between gap-4">
-          <p className="text-sm uppercase tracking-wider text-slate-500">
-            {filteredEntries.length}{" "}
-            {filteredEntries.length === 1 ? "guide entry" : "guide entries"}
-          </p>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        gap={2}
+      >
+        <Typography
+          variant="caption"
+          sx={{ textTransform: "uppercase", letterSpacing: ".08em" }}
+        >
+          {isLoading
+            ? "Loading entries..."
+            : `${filteredEntries.length} ${
+                filteredEntries.length === 1 ? "guide entry" : "guide entries"
+              }`}
+        </Typography>
 
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="text-sm text-slate-400 transition hover:text-slate-100"
-            >
-              Clear filters
-            </button>
-          )}
-        </div>
-
-        {filteredEntries.length > 0 ? (
-          <div className="grid gap-5 md:grid-cols-2">
-            {filteredEntries.map((entry) => (
-              <GuideCard key={entry.id} entry={entry} />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-slate-700 bg-slate-800/50 px-6 py-16 text-center">
-            <CircleHelpIcon />
-
-            <h2 className="mt-5 text-xl font-medium text-slate-100">
-              No Guide entries found
-            </h2>
-
-            <p className="mx-auto mt-2 max-w-md text-slate-400">
-              The Guide appears to know nothing about that. Try another search
-              or clear your filters.
-            </p>
-
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="mt-6 rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
-            >
-              Clear filters
-            </button>
-          </div>
+        {hasActiveFilters && (
+          <Button variant="text" size="small" onClick={clearFilters}>
+            Clear filters
+          </Button>
         )}
-      </section>
-    </main>
-  );
-}
+      </Stack>
 
-function CircleHelpIcon() {
-  return (
-    <div
-      className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-slate-600 text-xl text-slate-400"
-      aria-hidden="true"
-    >
-      ?
-    </div>
+      {isLoading ? (
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+          }}
+          aria-busy="true"
+        >
+          {Array.from({ length: 4 }, (_, index) => (
+            <GuideCardSkeleton key={index} />
+          ))}
+        </Box>
+      ) : isError ? (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => refetch()}>
+              Try again
+            </Button>
+          }
+        >
+          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+            The Guide is temporarily unavailable
+          </Typography>
+          <Typography variant="body2">
+            {error instanceof Error
+              ? error.message
+              : "Something went wrong while retrieving the collected knowledge of the galaxy."}
+          </Typography>
+        </Alert>
+      ) : filteredEntries.length > 0 ? (
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+          }}
+        >
+          {filteredEntries.map((entry) => (
+            <GuideCard key={entry.id} entry={entry} />
+          ))}
+        </Box>
+      ) : (
+        <Alert
+          severity="info"
+          action={
+            <Button color="inherit" size="small" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          }
+        >
+          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+            No Guide entries found
+          </Typography>
+          <Typography variant="body2">
+            The Guide appears to know nothing about that. Try another search or
+            clear your filters.
+          </Typography>
+        </Alert>
+      )}
+    </Stack>
   );
 }
