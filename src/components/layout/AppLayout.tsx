@@ -3,98 +3,133 @@ import {
   Box,
   Button,
   Container,
+  IconButton,
   Stack,
   Toolbar,
   Typography,
 } from "@mui/material";
 import { LogOut, Orbit } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../features/auth/context/AuthContext";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard" },
   { label: "Guide", to: "/guide" },
-  { label: "Expedition Checklist", to: "/tasks" },
+  { label: "Checklist", to: "/tasks" },
 ];
 
 export function AppLayout() {
   const { user, signOutUser } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   async function handleSignOut() {
     await signOutUser();
+    queryClient.clear();
     navigate("/login", { replace: true });
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        overflowX: "hidden",
+      }}
+    >
       <AppBar
         position="static"
         elevation={0}
         sx={{ borderBottom: "1px solid rgba(255,255,255,.08)" }}
       >
-        <Toolbar
-          sx={{
-            maxWidth: 1100,
-            width: "100%",
-            mx: "auto",
-            px: { xs: 2, sm: 3 },
-            gap: 2,
-          }}
-        >
-          <Orbit color="#f2c14e" aria-hidden="true" />
-          <Typography variant="subtitle1" sx={{ fontWeight: 750 }}>
-            The Hitchhiker’s Field Guide
-          </Typography>
-
-          <Box sx={{ flexGrow: 1 }} />
-
-          <Stack
-            direction="row"
-            spacing={1}
-            component="nav"
-            aria-label="Primary"
+        <Container maxWidth="md">
+          <Toolbar
+            disableGutters
+            sx={{
+              flexWrap: "wrap",
+              columnGap: 2,
+              py: { xs: 1, sm: 0 },
+            }}
           >
-            {navItems.map((item) => (
-              <Button
-                key={item.to}
-                component={NavLink}
-                to={item.to}
-                color="inherit"
-                sx={{
-                  px: 1.5,
-                  minWidth: 0,
-                  color: "text.secondary",
-                  "&.active": {
-                    color: "secondary.main",
-                  },
-                }}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              sx={{ minWidth: 0 }}
+            >
+              <Orbit color="#f2c14e" aria-hidden="true" />
+              <Typography variant="subtitle1" noWrap sx={{ fontWeight: 750 }}>
+                The Hitchhiker’s Field Guide
+              </Typography>
+            </Stack>
 
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: { xs: "none", sm: "block" }, ml: 1 }}
-          >
-            {user?.displayName}
-          </Typography>
+            <Box sx={{ flexGrow: 1 }} />
 
-          <Button
-            color="inherit"
-            onClick={handleSignOut}
-            startIcon={<LogOut size={17} />}
-            aria-label="Sign out"
-          >
-            Sign out
-          </Button>
-        </Toolbar>
+            {/* Nav: second row on phones, inline from sm up */}
+            <Stack
+              component="nav"
+              aria-label="Primary"
+              direction="row"
+              spacing={0.5}
+              sx={{
+                order: { xs: 3, sm: 0 },
+                width: { xs: "100%", sm: "auto" },
+                overflowX: "auto",
+                mt: { xs: 0.5, sm: 0 },
+              }}
+            >
+              {navItems.map((item) => (
+                <Button
+                  key={item.to}
+                  component={NavLink}
+                  to={item.to}
+                  color="inherit"
+                  size="small"
+                  sx={{
+                    px: 1.5,
+                    minWidth: 0,
+                    whiteSpace: "nowrap",
+                    color: "text.secondary",
+                    "&.active": { color: "secondary.main" },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </Stack>
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              noWrap
+              sx={{ display: { xs: "none", md: "block" }, maxWidth: 160 }}
+            >
+              {user?.displayName}
+            </Typography>
+
+            {/* Sign out: icon on phones, text button from sm up */}
+            <IconButton
+              color="inherit"
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              sx={{ display: { xs: "inline-flex", sm: "none" } }}
+            >
+              <LogOut size={18} />
+            </IconButton>
+            <Button
+              color="inherit"
+              onClick={handleSignOut}
+              startIcon={<LogOut size={17} />}
+              sx={{ display: { xs: "none", sm: "inline-flex" } }}
+            >
+              Sign out
+            </Button>
+          </Toolbar>
+        </Container>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, sm: 8 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 3, sm: 8 } }}>
         <Outlet />
       </Container>
     </Box>

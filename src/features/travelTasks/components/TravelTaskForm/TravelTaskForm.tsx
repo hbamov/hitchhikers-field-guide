@@ -7,6 +7,7 @@ import type {
   TaskPriority,
   TravelTask,
 } from "../../types/travelTask.types";
+import { formatDateInput, parseDateInput } from "../../utils/date";
 
 const taskSchema = z.object({
   title: z
@@ -35,11 +36,6 @@ interface TravelTaskFormProps {
 
 const priorities: TaskPriority[] = ["low", "medium", "high"];
 
-function toDateInputValue(date?: Date) {
-  if (!date) return "";
-  return date.toISOString().slice(0, 10);
-}
-
 export function TravelTaskForm({
   mode,
   initialTask,
@@ -57,7 +53,7 @@ export function TravelTaskForm({
       title: initialTask?.title ?? "",
       description: initialTask?.description ?? "",
       priority: initialTask?.priority ?? "medium",
-      dueDate: toDateInputValue(initialTask?.dueDate),
+      dueDate: formatDateInput(initialTask?.dueDate),
     },
   });
 
@@ -66,7 +62,7 @@ export function TravelTaskForm({
       title: values.title,
       description: values.description || undefined,
       priority: values.priority,
-      dueDate: values.dueDate ? new Date(values.dueDate) : undefined,
+      dueDate: parseDateInput(values.dueDate ?? ""),
     });
   };
 

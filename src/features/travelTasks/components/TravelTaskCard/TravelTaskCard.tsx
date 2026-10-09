@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   Checkbox,
-  Chip,
   Stack,
   Typography,
 } from "@mui/material";
@@ -29,70 +28,51 @@ export function TravelTaskCard({
   return (
     <Card variant="outlined" sx={{ opacity: isCompleted ? 0.85 : 1 }}>
       <CardContent>
-        <Stack spacing={1.25}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          alignItems={{ xs: "flex-start", sm: "center" }}
+          justifyContent="space-between"
+          gap={1}
+        >
           <Stack
             direction="row"
             alignItems="center"
-            justifyContent="space-between"
             gap={1}
+            sx={{ minWidth: 0 }}
           >
-            <Stack direction="row" alignItems="center" gap={1}>
-              <Checkbox
-                checked={isCompleted}
-                onChange={() => onToggleStatus(task)}
-                disabled={busy}
-                inputProps={{
-                  "aria-label": isCompleted
-                    ? "Mark as open"
-                    : "Mark as completed",
-                }}
-              />
-              <Typography
-                variant="h6"
-                sx={{ textDecoration: isCompleted ? "line-through" : "none" }}
-              >
-                {task.title}
-              </Typography>
-            </Stack>
-
-            <Stack direction="row" spacing={1}>
-              <Button size="small" onClick={() => onEdit(task)} disabled={busy}>
-                Edit
-              </Button>
-              <Button
-                size="small"
-                color="error"
-                onClick={() => onDelete(task)}
-                disabled={busy}
-              >
-                Delete
-              </Button>
-            </Stack>
+            <Checkbox
+              checked={isCompleted}
+              onChange={() => onToggleStatus(task)}
+              disabled={busy}
+              inputProps={{
+                "aria-label": isCompleted
+                  ? "Mark as open"
+                  : "Mark as completed",
+              }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                textDecoration: isCompleted ? "line-through" : "none",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {task.title}
+            </Typography>
           </Stack>
 
-          {task.description ? (
-            <Typography color="text.secondary">{task.description}</Typography>
-          ) : null}
-
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Chip
+          <Stack direction="row" spacing={1} sx={{ pl: { xs: 5, sm: 0 } }}>
+            <Button size="small" onClick={() => onEdit(task)} disabled={busy}>
+              Edit
+            </Button>
+            <Button
               size="small"
-              label={isCompleted ? "Completed" : "Open"}
-              color={isCompleted ? "success" : "default"}
-              variant="outlined"
-            />
-            <Chip
-              size="small"
-              label={`Priority: ${task.priority}`}
-              variant="outlined"
-            />
-            {task.dueDate ? (
-              <Chip
-                size="small"
-                label={`Due: ${task.dueDate.toLocaleDateString()}`}
-                variant="outlined"
-              />
-            ) : null}
+              color="error"
+              onClick={() => onDelete(task)}
+              disabled={busy}
+            >
+              Delete
+            </Button>
           </Stack>
         </Stack>
       </CardContent>
