@@ -14,6 +14,7 @@ import { useAuth } from "../../features/auth/context/AuthContext";
 const navItems = [
   { label: "Dashboard", to: "/dashboard" },
   { label: "Guide", to: "/guide" },
+  { label: "Expedition Checklist", to: "/tasks" },
 ];
 
 export function AppLayout() {

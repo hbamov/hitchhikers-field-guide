@@ -13,6 +13,18 @@ service cloud.firestore {
       return signedIn() && userRole() == 'administrator';
     }
 
+    function isTaskOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function validTaskStatus(status) {
+      return status in ['open', 'completed'];
+    }
+
+    function validTaskPriority(priority) {
+      return priority in ['low', 'medium', 'high'];
+    }
+
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdministrator());
       allow create: if signedIn()
@@ -28,6 +40,41 @@ service cloud.firestore {
     match /guideEntries/{entryId} {
       allow read: if signedIn();
       allow write: if false;
+    }
+
+    match /travelTasks/{taskId} {
+      allow read: if isTaskOwner(resource.data.userId);
+
+      allow create: if isTaskOwner(request.resource.data.userId)
+        && request.resource.data.keys().hasOnly([
+          'userId', 'title', 'description', 'status', 'priority', 'dueDate', 'createdAt', 'updatedAt', 'completedAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 100
+        && (!('description' in request.resource.data) || (
+          request.resource.data.description is string
+          && request.resource.data.description.size() <= 500
+        ))
+        && validTaskStatus(request.resource.data.status)
+        && validTaskPriority(request.resource.data.priority);
+
+      allow update: if isTaskOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.keys().hasOnly([
+          'userId', 'title', 'description', 'status', 'priority', 'dueDate', 'createdAt', 'updatedAt', 'completedAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 100
+        && (!('description' in request.resource.data) || (
+          request.resource.data.description is string
+          && request.resource.data.description.size() <= 500
+        ))
+        && validTaskStatus(request.resource.data.status)
+        && validTaskPriority(request.resource.data.priority);
+
+      allow delete: if isTaskOwner(resource.data.userId);
     }
 
     match /{document=**} {

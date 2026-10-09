@@ -70,7 +70,7 @@ Built with React 19, TypeScript, and Vite, backed by Firebase (Authentication + 
 
 ## Project Structure
 
-```
+```text
 src/
 ├── app/            # Providers, router, theme
 ├── components/     # Shared layout components
