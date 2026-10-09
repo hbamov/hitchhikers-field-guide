@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useTravelTasks } from "../hooks/useTravelTasks";
+import { TravelTaskCard } from "../components/TravelTaskCard/TravelTaskCard";
 
 export function TravelTasksPage() {
   const { user } = useAuth();
@@ -67,23 +68,7 @@ export function TravelTasksPage() {
       ) : (
         <Stack spacing={1.5}>
           {tasks.map((task) => (
-            <Card key={task.id} variant="outlined">
-              <CardContent>
-                <Typography variant="h6">{task.title}</Typography>
-                {task.description ? (
-                  <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                    {task.description}
-                  </Typography>
-                ) : null}
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ mt: 1, display: "block" }}
-                >
-                  {task.status.toUpperCase()} · {task.priority.toUpperCase()}
-                </Typography>
-              </CardContent>
-            </Card>
+            <TravelTaskCard key={task.id} task={task} />
           ))}
         </Stack>
       )}
