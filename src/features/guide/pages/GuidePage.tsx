@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import { GuideCard } from "../components/GuideCard";
 import type { GuideCategory } from "../types/guide.types";
 import { useGuideEntries } from "../hooks/useGuideEntries";
+import { GuideCardSkeleton } from "../components/GuideCardSkeleton/GuideCardSkeleton";
 
 type CategoryFilter = "all" | GuideCategory;
 
@@ -59,8 +60,15 @@ export function GuidePage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-6xl px-6 py-12 lg:py-16">
-        <p className="text-slate-400">Consulting the Guide...</p>
+      <main className="mx-auto w-full max-w-6xl px-6 py-6" aria-busy="true">
+        <p role="status" className="sr-only">
+          Consulting the Guide...
+        </p>
+        <div className="grid gap-5 md:grid-cols-2">
+          {Array.from({ length: 4 }, (_, i) => (
+            <GuideCardSkeleton key={i} />
+          ))}
+        </div>
       </main>
     );
   }
