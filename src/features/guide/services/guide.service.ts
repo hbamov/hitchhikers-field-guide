@@ -1,6 +1,6 @@
 import { collection, getDocs } from "firebase/firestore";
 
-import { db } from "../../../../src/shared/firebase/firebase";
+import { db } from "../../../shared/firebase/firebase";
 import type { GuideEntry } from "../types/guide.types";
 
 export async function getGuideEntries(): Promise<GuideEntry[]> {
