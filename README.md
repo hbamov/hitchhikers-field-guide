@@ -1,32 +1,89 @@
-# React + TypeScript + Vite
+# Hitchhiker's Field Guide
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A field guide to the galaxy, inspired by _The Hitchhiker's Guide to the Galaxy_. Browse guide entries for planets, species, places, technology, and objects — each rated from **Mostly Harmless** to **Legendary**.
 
-Currently, two official plugins are available:
+Built with React 19, TypeScript, and Vite, backed by Firebase (Authentication + Firestore).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Authentication** — email/password login and registration via Firebase Auth, with protected and guest-only routes
+- **Dashboard** — landing area for signed-in users
+- **Guide** — browse entries from a Firestore `guideEntries` collection, organized by category (`planet`, `species`, `place`, `technology`, `object`) and classification (`mostly-harmless`, `safe`, `caution`, `dangerous`, `legendary`, `unknown`)
+- **Graceful fallback** — the app detects missing Firebase config and degrades gracefully instead of crashing
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the Oxlint configuration
+| Area               | Tools                                      |
+| ------------------ | ------------------------------------------ |
+| Framework          | React 19, TypeScript, Vite                 |
+| Routing            | React Router 7                             |
+| Data fetching      | TanStack React Query                       |
+| Backend            | Firebase Auth, Cloud Firestore             |
+| Styling            | MUI (Material UI), Emotion, Tailwind CSS 4 |
+| Forms & validation | React Hook Form, Zod                       |
+| Icons              | lucide-react                               |
+| Testing            | Vitest, Testing Library, jsdom             |
+| Package manager    | pnpm                                       |
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Getting Started
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+### Prerequisites
+
+- Node.js 20+
+- pnpm
+- A Firebase project with Authentication and Firestore enabled
+
+### Setup
+
+1. Install dependencies:
+
+   ```sh
+   pnpm install
+   ```
+
+2. Create a `.env` file based on `.env.example` and fill in your Firebase web app credentials:
+
+   ```sh
+   VITE_FIREBASE_API_KEY=
+   VITE_FIREBASE_AUTH_DOMAIN=
+   VITE_FIREBASE_PROJECT_ID=
+   VITE_FIREBASE_STORAGE_BUCKET=
+   VITE_FIREBASE_MESSAGING_SENDER_ID=
+   VITE_FIREBASE_APP_ID=
+   ```
+
+3. Start the dev server:
+
+   ```sh
+   pnpm dev
+   ```
+
+## Scripts
+
+| Command           | Description                         |
+| ----------------- | ----------------------------------- |
+| `pnpm dev`        | Start the Vite dev server           |
+| `pnpm build`      | Type-check and build for production |
+| `pnpm preview`    | Preview the production build        |
+| `pnpm test`       | Run the test suite once             |
+| `pnpm test:watch` | Run tests in watch mode             |
+
+## Project Structure
+
+```
+src/
+├── app/            # Providers, router, theme
+├── components/     # Shared layout components
+├── features/
+│   ├── auth/       # Auth context, pages, and service
+│   └── guide/      # Guide entries: hooks, service, types, UI
+├── pages/          # Dashboard, NotFound
+├── shared/         # Firebase setup, shared types and content
+└── test/           # Test setup
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Route protection is handled by `ProtectedRoute` and `GuestRoute`; guide data is fetched from the `guideEntries` Firestore collection (see `firestore.rules` for access rules).
+
+---
+
+_Don't Panic._
