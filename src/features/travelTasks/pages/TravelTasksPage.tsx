@@ -19,6 +19,7 @@ import { CreateTravelTaskDialog } from "../components/CreateTravelTaskDialog/Cre
 import { EditTravelTaskDialog } from "../components/EditTravelTaskDialog/EditTravelTaskDialog";
 import { DeleteTaskDialog } from "../components/DeleteTaskDialog/DeleteTaskDialog";
 import type { TaskStatus, TravelTask } from "../types/travelTask.types";
+import TravelTaskSummary from "../components/TravelTaskSummary/TravelTaskSummary";
 
 type StatusFilter = "all" | TaskStatus;
 
@@ -42,16 +43,32 @@ export function TravelTasksPage() {
     return tasks.filter((task) => task.status === statusFilter);
   }, [tasks, statusFilter]);
 
+  const counts = useMemo(
+    () => ({
+      open: tasks.filter((task) => task.status === "open").length,
+      completed: tasks.filter((task) => task.status === "completed").length,
+      highPriorityOpen: tasks.filter(
+        (task) => task.status === "open" && task.priority === "high",
+      ).length,
+    }),
+    [tasks],
+  );
+
   async function handleToggleStatus(task: TravelTask) {
     const nextStatus: TaskStatus =
       task.status === "open" ? "completed" : "open";
-    await updateTaskMutation.mutateAsync({
-      taskId: task.id,
-      input: {
-        status: nextStatus,
-        completedAt: nextStatus === "completed" ? new Date() : null,
-      },
-    });
+
+    try {
+      await updateTaskMutation.mutateAsync({
+        taskId: task.id,
+        input: {
+          status: nextStatus,
+          completedAt: nextStatus === "completed" ? new Date() : null,
+        },
+      });
+    } catch {
+      // TODO Option al: show snackbar/toast later
+    }
   }
 
   return (
@@ -80,6 +97,14 @@ export function TravelTasksPage() {
       >
         Add checklist item
       </Button>
+
+      {!isLoading && !isError && tasks.length > 0 ? (
+        <TravelTaskSummary
+          openCount={counts.open}
+          completedCount={counts.completed}
+          highPriorityOpenCount={counts.highPriorityOpen}
+        />
+      ) : null}
 
       <ToggleButtonGroup
         value={statusFilter}
