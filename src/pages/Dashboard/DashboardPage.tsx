@@ -17,19 +17,46 @@ import { Link as RouterLink } from "react-router-dom";
 import { useMemo } from "react";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { useTravelTasks } from "../../features/travelTasks/hooks/useTravelTasks";
+import { useGuideEntries } from "../../features/guide/hooks/useGuideEntries";
+import { selectFeaturedGuideEntry } from "../../features/guide/utils/selectFeaturedGuideEntry";
 import { dashboardMessages } from "./dashboardMessages";
+import type { GuideClassification } from "../../features/guide/types/guide.types";
 
 const PREVIEW_LIMIT = 3;
 
+const classificationLabels: Record<GuideClassification, string> = {
+  "mostly-harmless": "MOSTLY HARMLESS",
+  safe: "SAFE",
+  caution: "CAUTION ADVISED",
+  dangerous: "DANGEROUS",
+  legendary: "LEGENDARY",
+  unknown: "UNKNOWN",
+};
+
 export function DashboardPage() {
   const { user } = useAuth();
-  const { data: tasks = [], isLoading, isError } = useTravelTasks(user?.uid);
+
+  const {
+    data: tasks = [],
+    isLoading: tasksLoading,
+    isError: tasksError,
+  } = useTravelTasks(user?.uid);
+  const {
+    data: guideEntries = [],
+    isLoading: guideLoading,
+    isError: guideError,
+  } = useGuideEntries();
 
   const openTasks = useMemo(
     () => tasks.filter((task) => task.status === "open"),
     [tasks],
   );
+
   const previewTasks = openTasks.slice(0, PREVIEW_LIMIT);
+  const featuredEntry = useMemo(
+    () => selectFeaturedGuideEntry(guideEntries),
+    [guideEntries],
+  );
 
   return (
     <Stack spacing={3}>
@@ -66,6 +93,7 @@ export function DashboardPage() {
           gap: 2,
         }}
       >
+        {/* Featured Destination */}
         <Card>
           <CardContent sx={{ p: 3 }}>
             <Stack
@@ -79,24 +107,51 @@ export function DashboardPage() {
                 {dashboardMessages.featuredDestination}
               </Typography>
             </Stack>
-            <Typography variant="h5" sx={{ mt: 1 }}>
-              Magrathea
-            </Typography>
-            <Typography color="text.secondary" sx={{ mt: 1 }}>
-              Legendary planet of custom-built worlds. Booking windows are
-              measured in geological eras.
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              <Chip
-                size="small"
-                label="CLASSIFIED: MYTHICAL"
-                color="secondary"
-                variant="outlined"
-              />
-            </Box>
+
+            {guideLoading ? (
+              <Stack spacing={1} sx={{ mt: 1.5 }} aria-busy="true">
+                <Skeleton variant="rounded" height={32} width="60%" />
+                <Skeleton variant="rounded" height={20} />
+                <Skeleton variant="rounded" height={20} width="80%" />
+              </Stack>
+            ) : guideError ? (
+              <Typography color="text.secondary" sx={{ mt: 1.5 }}>
+                We couldn’t load featured Guide data right now.
+              </Typography>
+            ) : featuredEntry ? (
+              <>
+                <Typography variant="h5" sx={{ mt: 1 }}>
+                  {featuredEntry.name}
+                </Typography>
+                <Typography color="text.secondary" sx={{ mt: 1 }}>
+                  {featuredEntry.summary}
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Chip
+                    size="small"
+                    label={`CLASSIFICATION: ${classificationLabels[featuredEntry.classification]}`}
+                    color="secondary"
+                    variant="outlined"
+                  />
+                </Box>
+                <Button
+                  component={RouterLink}
+                  to={`/guide/${featuredEntry.id}`}
+                  size="small"
+                  sx={{ mt: 2, px: 0 }}
+                >
+                  View full entry →
+                </Button>
+              </>
+            ) : (
+              <Typography color="text.secondary" sx={{ mt: 1.5 }}>
+                No Guide entries available yet.
+              </Typography>
+            )}
           </CardContent>
         </Card>
 
+        {/* Checklist Preview */}
         <Card>
           <CardContent sx={{ p: 3 }}>
             <Stack
@@ -111,13 +166,13 @@ export function DashboardPage() {
               </Typography>
             </Stack>
 
-            {isLoading ? (
+            {tasksLoading ? (
               <Stack spacing={1} sx={{ mt: 1.5 }} aria-busy="true">
                 <Skeleton variant="rounded" height={32} width="60%" />
                 <Skeleton variant="rounded" height={20} />
                 <Skeleton variant="rounded" height={20} width="80%" />
               </Stack>
-            ) : isError ? (
+            ) : tasksError ? (
               <Typography color="text.secondary" sx={{ mt: 1.5 }}>
                 We couldn’t load your checklist right now.
               </Typography>
@@ -143,10 +198,7 @@ export function DashboardPage() {
                 <List dense disablePadding sx={{ mt: 1 }}>
                   {previewTasks.map((task) => (
                     <ListItem key={task.id} disableGutters>
-                      <ListItemText
-                        primary={task.title}
-                        slotProps={{ primary: { noWrap: true } }}
-                      />
+                      <ListItemText primary={task.title} />
                     </ListItem>
                   ))}
                 </List>
