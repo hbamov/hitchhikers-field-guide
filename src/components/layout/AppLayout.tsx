@@ -13,16 +13,19 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../features/auth/context/AuthContext";
 
-const navItems = [
-  { label: "Dashboard", to: "/dashboard" },
-  { label: "Guide", to: "/guide" },
-  { label: "Checklist", to: "/tasks" },
-];
-
 export function AppLayout() {
   const { user, signOutUser } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const navItems = [
+    { label: "Dashboard", to: "/dashboard" },
+    { label: "Guide", to: "/guide" },
+    { label: "Checklist", to: "/tasks" },
+    ...(user?.role === "administrator"
+      ? [{ label: "Admin", to: "/admin/guide" }]
+      : []),
+  ];
 
   async function handleSignOut() {
     await signOutUser();

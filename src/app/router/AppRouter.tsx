@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { GuestRoute } from "./GuestRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { AdminRoute } from "./AdminRoute";
+import { AdminGuidePage } from "../../features/adminGuide/pages/AdminGuidePage";
 import { AuthPage } from "../../features/auth/pages/AuthPage";
 import { DashboardPage } from "../../pages/Dashboard/DashboardPage";
 import { AppLayout } from "../../components/layout/AppLayout";
@@ -18,6 +20,9 @@ export function AppRouter() {
       </Route>
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/guide" element={<AdminGuidePage />} />
+          </Route>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/guide" element={<GuidePage />} />
           <Route path="/guide/:entryId" element={<GuideEntryPage />} />
