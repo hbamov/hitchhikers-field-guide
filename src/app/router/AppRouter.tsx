@@ -7,6 +7,7 @@ import { AppLayout } from "../../components/layout/AppLayout";
 import { NotFoundPage } from "../../pages/NotFound/NotFoundPage";
 import { GuidePage } from "../../features/guide/pages/GuidePage";
 import { TravelTasksPage } from "../../features/travelTasks/pages/TravelTasksPage";
+import { GuideEntryPage } from "../../features/guide/pages/GuideEntryPage";
 
 export function AppRouter() {
   return (
@@ -19,6 +20,7 @@ export function AppRouter() {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/guide" element={<GuidePage />} />
+          <Route path="/guide/:entryId" element={<GuideEntryPage />} />
           <Route path="/tasks" element={<TravelTasksPage />} />
         </Route>
       </Route>

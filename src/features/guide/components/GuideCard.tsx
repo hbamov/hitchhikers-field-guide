@@ -9,6 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { GuideCategory, GuideEntry } from "../types/guide.types";
+import { Link as RouterLink } from "react-router-dom";
 
 interface GuideCardProps {
   entry: GuideEntry;
@@ -98,12 +99,11 @@ export function GuideCard({ entry }: GuideCardProps) {
         </Stack>
 
         <Button
-          type="button"
-          disabled
+          component={RouterLink}
+          to={`/guide/${entry.id}`}
           sx={{ mt: 2.5, alignSelf: "flex-start", px: 0 }}
-          title="Guide entry details will be available in a future phase"
         >
-          Full entry coming soon
+          View full entry
         </Button>
       </CardContent>
     </Card>
