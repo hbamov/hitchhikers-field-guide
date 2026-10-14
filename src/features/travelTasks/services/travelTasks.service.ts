@@ -1,23 +1,24 @@
 import {
+  addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   orderBy,
   query,
+  serverTimestamp,
+  updateDoc,
   where,
   type Timestamp,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../../shared/firebase/firebase";
 import type {
+  CreateTravelTaskInput,
   TravelTask,
   TravelTaskDoc,
-  CreateTravelTaskInput,
   UpdateTravelTaskInput,
 } from "../types/travelTask.types";
+import type { GuideEntry } from "../../guide/types/guide.types";
 
 function toDate(value?: Timestamp): Date | undefined {
   return value?.toDate();
@@ -39,9 +40,7 @@ function mapTaskDoc(id: string, data: TravelTaskDoc): TravelTask {
 }
 
 export async function getTravelTasks(userId: string): Promise<TravelTask[]> {
-  if (!db) {
-    throw new Error("Firebase Firestore is not initialized.");
-  }
+  if (!db) throw new Error("Firebase Firestore is not initialized.");
 
   const tasksQuery = query(
     collection(db, "travelTasks"),
@@ -51,8 +50,8 @@ export async function getTravelTasks(userId: string): Promise<TravelTask[]> {
 
   const snapshot = await getDocs(tasksQuery);
 
-  return snapshot.docs.map((doc) =>
-    mapTaskDoc(doc.id, doc.data() as TravelTaskDoc),
+  return snapshot.docs.map((taskDoc) =>
+    mapTaskDoc(taskDoc.id, taskDoc.data() as TravelTaskDoc),
   );
 }
 
@@ -101,4 +100,22 @@ export async function updateTravelTask(
 export async function deleteTravelTask(taskId: string): Promise<void> {
   if (!db) throw new Error("Firebase Firestore is not initialized.");
   await deleteDoc(doc(db, "travelTasks", taskId));
+}
+
+/**
+ * Creates a checklist task based on a Guide entry.
+ */
+export async function createTravelTaskFromGuideEntry(
+  userId: string,
+  entry: GuideEntry,
+): Promise<void> {
+  const description = `Guide category: ${entry.category}. ${entry.summary}`;
+  const truncatedDescription =
+    description.length > 500 ? `${description.slice(0, 497)}...` : description;
+
+  await createTravelTask(userId, {
+    title: `Research ${entry.name}`,
+    description: truncatedDescription,
+    priority: "medium",
+  });
 }

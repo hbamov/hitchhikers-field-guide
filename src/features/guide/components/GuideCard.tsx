@@ -1,4 +1,12 @@
-import { CircleHelp, Cpu, Fish, Globe2, MapPin, Package } from "lucide-react";
+import {
+  CircleHelp,
+  Cpu,
+  Fish,
+  Globe2,
+  MapPin,
+  Package,
+  Plus,
+} from "lucide-react";
 import {
   Box,
   Button,
@@ -8,11 +16,13 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import type { GuideCategory, GuideEntry } from "../types/guide.types";
 import { Link as RouterLink } from "react-router-dom";
+import type { GuideCategory, GuideEntry } from "../types/guide.types";
 
 interface GuideCardProps {
   entry: GuideEntry;
+  onAddToChecklist: (entry: GuideEntry) => void;
+  addingToChecklist?: boolean;
 }
 
 const categoryIcons: Record<GuideCategory, typeof Globe2> = {
@@ -32,7 +42,11 @@ const classificationLabels = {
   unknown: "Unknown",
 };
 
-export function GuideCard({ entry }: GuideCardProps) {
+export function GuideCard({
+  entry,
+  onAddToChecklist,
+  addingToChecklist = false,
+}: GuideCardProps) {
   const Icon = categoryIcons[entry.category] ?? CircleHelp;
 
   return (
@@ -98,13 +112,30 @@ export function GuideCard({ entry }: GuideCardProps) {
           ))}
         </Stack>
 
-        <Button
-          component={RouterLink}
-          to={`/guide/${entry.id}`}
-          sx={{ mt: 2.5, alignSelf: "flex-start", px: 0 }}
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ mt: 2.5, flexWrap: "wrap" }}
+          useFlexGap
         >
-          View full entry
-        </Button>
+          <Button
+            component={RouterLink}
+            to={`/guide/${entry.id}`}
+            size="small"
+            sx={{ px: 0 }}
+          >
+            View full entry
+          </Button>
+
+          <Button
+            size="small"
+            startIcon={<Plus size={14} />}
+            onClick={() => onAddToChecklist(entry)}
+            disabled={addingToChecklist}
+          >
+            {addingToChecklist ? "Adding..." : "Add to checklist"}
+          </Button>
+        </Stack>
       </CardContent>
     </Card>
   );

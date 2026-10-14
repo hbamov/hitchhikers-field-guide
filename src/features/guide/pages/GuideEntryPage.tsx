@@ -6,13 +6,25 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Snackbar,
   Stack,
   Typography,
 } from "@mui/material";
-import { Cpu, Fish, Globe2, MapPin, Package, ArrowLeft } from "lucide-react";
+import {
+  Cpu,
+  Fish,
+  Globe2,
+  MapPin,
+  Package,
+  ArrowLeft,
+  Plus,
+} from "lucide-react";
 import { Link as RouterLink, useParams } from "react-router-dom";
+import { useState } from "react";
 import { useGuideEntry } from "../hooks/useGuideEntry";
 import type { GuideCategory, GuideClassification } from "../types/guide.types";
+import { useAuth } from "../../auth/context/AuthContext";
+import { useCreateTravelTaskFromGuide } from "../../travelTasks/hooks/useCreateTravelTaskFromGuide";
 
 const categoryIcons: Record<GuideCategory, typeof Globe2> = {
   planet: Globe2,
@@ -33,7 +45,27 @@ const classificationLabels: Record<GuideClassification, string> = {
 
 export function GuideEntryPage() {
   const { entryId } = useParams<{ entryId: string }>();
+  const { user } = useAuth();
+  const addFromGuideMutation = useCreateTravelTaskFromGuide(user?.uid);
+
+  const [notice, setNotice] = useState<string | null>(null);
+  const [noticeError, setNoticeError] = useState<string | null>(null);
+
   const { data: entry, isLoading, isError, refetch } = useGuideEntry(entryId);
+
+  async function handleAddToChecklist() {
+    if (!entry) return;
+
+    try {
+      setNoticeError(null);
+      await addFromGuideMutation.mutateAsync(entry);
+      setNotice(`Added "${entry.name}" to your checklist.`);
+    } catch {
+      setNoticeError(
+        "Couldn’t add this entry to your checklist. Please try again.",
+      );
+    }
+  }
 
   if (isLoading) {
     return (
@@ -94,63 +126,90 @@ export function GuideEntryPage() {
   const Icon = categoryIcons[entry.category];
 
   return (
-    <Stack spacing={2.5}>
-      <Button
-        component={RouterLink}
-        to="/guide"
-        startIcon={<ArrowLeft size={16} />}
-        sx={{ alignSelf: "flex-start" }}
-      >
-        Back to Guide
-      </Button>
+    <>
+      <Stack spacing={2.5}>
+        <Button
+          component={RouterLink}
+          to="/guide"
+          startIcon={<ArrowLeft size={16} />}
+          sx={{ alignSelf: "flex-start" }}
+        >
+          Back to Guide
+        </Button>
 
-      <Card variant="outlined">
-        <CardContent sx={{ p: 3 }}>
-          <Stack spacing={2}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              gap={1.5}
-            >
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Box
-                  sx={{ color: "secondary.main", display: "inline-flex" }}
-                  aria-hidden="true"
-                >
-                  <Icon size={18} />
-                </Box>
-                <Typography
-                  variant="overline"
-                  sx={{ color: "secondary.main", letterSpacing: ".12em" }}
-                >
-                  {entry.category}
-                </Typography>
+        <Card variant="outlined">
+          <CardContent sx={{ p: 3 }}>
+            <Stack spacing={2}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                gap={1.5}
+              >
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Box
+                    sx={{ color: "secondary.main", display: "inline-flex" }}
+                    aria-hidden="true"
+                  >
+                    <Icon size={18} />
+                  </Box>
+                  <Typography
+                    variant="overline"
+                    sx={{ color: "secondary.main", letterSpacing: ".12em" }}
+                  >
+                    {entry.category}
+                  </Typography>
+                </Stack>
+
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={classificationLabels[entry.classification]}
+                />
               </Stack>
 
-              <Chip
-                size="small"
-                variant="outlined"
-                label={classificationLabels[entry.classification]}
-              />
+              <Typography variant="h3" component="h1">
+                {entry.name}
+              </Typography>
+
+              <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                {entry.summary}
+              </Typography>
+
+              <Stack direction="row" gap={1} flexWrap="wrap" useFlexGap>
+                {entry.tags.map((tag) => (
+                  <Chip key={tag} size="small" label={tag} variant="outlined" />
+                ))}
+              </Stack>
+
+              <Button
+                startIcon={<Plus size={16} />}
+                onClick={handleAddToChecklist}
+                disabled={addFromGuideMutation.isPending}
+                sx={{ alignSelf: "flex-start" }}
+              >
+                {addFromGuideMutation.isPending
+                  ? "Adding..."
+                  : "Add to checklist"}
+              </Button>
             </Stack>
+          </CardContent>
+        </Card>
+      </Stack>
 
-            <Typography variant="h3" component="h1">
-              {entry.name}
-            </Typography>
+      <Snackbar
+        open={Boolean(notice)}
+        autoHideDuration={3000}
+        onClose={() => setNotice(null)}
+        message={notice}
+      />
 
-            <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
-              {entry.summary}
-            </Typography>
-
-            <Stack direction="row" gap={1} flexWrap="wrap" useFlexGap>
-              {entry.tags.map((tag) => (
-                <Chip key={tag} size="small" label={tag} variant="outlined" />
-              ))}
-            </Stack>
-          </Stack>
-        </CardContent>
-      </Card>
-    </Stack>
+      <Snackbar
+        open={Boolean(noticeError)}
+        autoHideDuration={4000}
+        onClose={() => setNoticeError(null)}
+        message={noticeError}
+      />
+    </>
   );
 }
