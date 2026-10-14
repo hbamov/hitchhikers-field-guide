@@ -50,12 +50,14 @@ export async function getGuideEntryById(
 }
 
 export interface UpsertGuideEntryInput {
-  id: string; // doc id
+  id: string;
   name: string;
   category: GuideCategory;
   summary: string;
   classification: GuideClassification;
   tags: string[];
+  description?: string;
+  travelAdvisory?: string;
 }
 
 export async function upsertGuideEntry(
@@ -63,18 +65,23 @@ export async function upsertGuideEntry(
 ): Promise<void> {
   if (!db) throw new Error("Firebase Firestore is not initialized.");
 
+  const description = input.description?.trim();
+  const travelAdvisory = input.travelAdvisory?.trim();
+
   const payload = {
     name: input.name.trim(),
     category: input.category,
     summary: input.summary.trim(),
     classification: input.classification,
     tags: input.tags.map((tag) => tag.trim()).filter(Boolean),
+    ...(description ? { description } : {}),
+    ...(travelAdvisory ? { travelAdvisory } : {}),
   };
 
   const parsed = guideEntrySchema.safeParse(payload);
   if (!parsed.success) throw new Error("Invalid guide entry data.");
 
-  await setDoc(doc(db, "guideEntries", input.id), parsed.data, { merge: true });
+  await setDoc(doc(db, "guideEntries", input.id), parsed.data);
 }
 
 export async function removeGuideEntry(entryId: string): Promise<void> {

@@ -18,6 +18,8 @@ import {
   type GuideCategory,
   type GuideClassification,
   type GuideEntry,
+  GUIDE_DESCRIPTION_MAX,
+  GUIDE_ADVISORY_MAX,
 } from "../../guide/types/guide.types";
 import { useUpsertGuideEntry } from "../hooks/useUpsertGuideEntry";
 
@@ -35,11 +37,31 @@ const schema = z.object({
     .string()
     .min(1, "ID is required.")
     .regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers, and hyphens."),
-  name: z.string().min(1, "Name is required."),
+  name: z
+    .string()
+    .min(1, "Name is required.")
+    .max(100, "Name must be 100 characters or fewer."),
   category: z.enum(GUIDE_CATEGORIES),
-  summary: z.string().min(1, "Summary is required."),
+  summary: z
+    .string()
+    .min(1, "Summary is required.")
+    .max(1000, "Summary must be 1000 characters or fewer."),
   classification: z.enum(classificationValues),
   tags: z.string().optional(),
+  description: z
+    .string()
+    .max(
+      GUIDE_DESCRIPTION_MAX,
+      `Description must be ${GUIDE_DESCRIPTION_MAX} characters or fewer.`,
+    )
+    .optional(),
+  travelAdvisory: z
+    .string()
+    .max(
+      GUIDE_ADVISORY_MAX,
+      `Travel advisory must be ${GUIDE_ADVISORY_MAX} characters or fewer.`,
+    )
+    .optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -68,6 +90,8 @@ export function GuideEntryFormDialog({
       classification: (initialEntry?.classification ??
         "unknown") as GuideClassification,
       tags: initialEntry?.tags?.join(", ") ?? "",
+      description: initialEntry?.description ?? "",
+      travelAdvisory: initialEntry?.travelAdvisory ?? "",
     }),
     [initialEntry],
   );
@@ -93,6 +117,8 @@ export function GuideEntryFormDialog({
         summary: values.summary,
         classification: values.classification,
         tags: values.tags ? values.tags.split(",") : [],
+        description: values.description,
+        travelAdvisory: values.travelAdvisory,
       });
 
       onClose();
@@ -186,6 +212,30 @@ export function GuideEntryFormDialog({
             {...register("summary")}
             error={!!errors.summary}
             helperText={errors.summary?.message}
+          />
+
+          <TextField
+            label="Description (optional)"
+            multiline
+            minRows={5}
+            {...register("description")}
+            error={!!errors.description}
+            helperText={
+              errors.description?.message ??
+              "Longer text for the details page. Line breaks are kept."
+            }
+          />
+
+          <TextField
+            label="Travel advisory (optional)"
+            multiline
+            minRows={2}
+            {...register("travelAdvisory")}
+            error={!!errors.travelAdvisory}
+            helperText={
+              errors.travelAdvisory?.message ??
+              "Short warning or practical tip."
+            }
           />
 
           <TextField

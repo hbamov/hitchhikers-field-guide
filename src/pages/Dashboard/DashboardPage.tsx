@@ -12,7 +12,8 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { MapPin, ShieldAlert, Sparkles } from "lucide-react";
+import { guideCategoryIconMap } from "../../features/guide/utils/guideCategoryIcon";
+import { ShieldAlert, Sparkles } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useMemo } from "react";
 import { useAuth } from "../../features/auth/context/AuthContext";
@@ -58,6 +59,10 @@ export function DashboardPage() {
     [guideEntries],
   );
 
+  const FeaturedCategoryIcon = featuredEntry
+    ? guideCategoryIconMap[featuredEntry.category]
+    : null;
+
   return (
     <Stack spacing={3}>
       <Box>
@@ -94,6 +99,7 @@ export function DashboardPage() {
         }}
       >
         {/* Featured Destination */}
+        {/* Featured Destination */}
         <Card>
           <CardContent sx={{ p: 3 }}>
             <Stack
@@ -102,7 +108,7 @@ export function DashboardPage() {
               alignItems="center"
               color="secondary.main"
             >
-              <MapPin size={20} />
+              {FeaturedCategoryIcon ? <FeaturedCategoryIcon size={18} /> : null}
               <Typography variant="overline">
                 {dashboardMessages.featuredDestination}
               </Typography>
@@ -123,17 +129,33 @@ export function DashboardPage() {
                 <Typography variant="h5" sx={{ mt: 1 }}>
                   {featuredEntry.name}
                 </Typography>
+
                 <Typography color="text.secondary" sx={{ mt: 1 }}>
                   {featuredEntry.summary}
                 </Typography>
-                <Box sx={{ mt: 2 }}>
+
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ mt: 2 }}
+                  flexWrap="wrap"
+                  useFlexGap
+                >
                   <Chip
                     size="small"
                     label={`CLASSIFICATION: ${classificationLabels[featuredEntry.classification]}`}
                     color="secondary"
                     variant="outlined"
                   />
-                </Box>
+                  {featuredEntry.tags[0] ? (
+                    <Chip
+                      size="small"
+                      label={`TAG: ${featuredEntry.tags[0].toLowerCase()}`}
+                      variant="outlined"
+                    />
+                  ) : null}
+                </Stack>
+
                 <Button
                   component={RouterLink}
                   to={`/guide/${featuredEntry.id}`}

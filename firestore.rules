@@ -38,7 +38,10 @@ service cloud.firestore {
     }
 
     function validGuideEntry(data) {
-      return data.keys().hasOnly(['name', 'category', 'summary', 'classification', 'tags'])
+      return data.keys().hasOnly([
+          'name', 'category', 'summary', 'classification', 'tags',
+          'description', 'travelAdvisory'
+        ])
         && data.keys().hasAll(['name', 'category', 'summary', 'classification', 'tags'])
         && data.name is string
         && data.name.size() > 0 && data.name.size() <= 100
@@ -47,7 +50,9 @@ service cloud.firestore {
         && data.category in ['planet', 'species', 'place', 'technology', 'object']
         && data.classification in ['mostly-harmless', 'safe', 'caution', 'dangerous', 'legendary', 'unknown']
         && data.tags is list
-        && data.tags.size() <= 20;
+        && data.tags.size() <= 20
+        && (!('description' in data) || (data.description is string && data.description.size() <= 2000))
+        && (!('travelAdvisory' in data) || (data.travelAdvisory is string && data.travelAdvisory.size() <= 500));
     }
 
     match /guideEntries/{entryId} {

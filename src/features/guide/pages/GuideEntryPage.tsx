@@ -18,6 +18,7 @@ import {
   Package,
   ArrowLeft,
   Plus,
+  ShieldAlert,
 } from "lucide-react";
 import { Link as RouterLink, useParams } from "react-router-dom";
 import { useState } from "react";
@@ -175,6 +176,34 @@ export function GuideEntryPage() {
               <Typography color="text.secondary" sx={{ lineHeight: 1.8 }}>
                 {entry.summary}
               </Typography>
+
+              {entry.description ? (
+                <Typography
+                  color="text.primary"
+                  sx={{
+                    lineHeight: 1.8,
+                    whiteSpace: "pre-line",
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {entry.description}
+                </Typography>
+              ) : null}
+
+              {entry.travelAdvisory ? (
+                <Alert severity="warning" icon={<ShieldAlert size={20} />}>
+                  <Typography
+                    variant="subtitle2"
+                    component="p"
+                    sx={{ mb: 0.25 }}
+                  >
+                    Travel advisory
+                  </Typography>
+                  <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>
+                    {entry.travelAdvisory}
+                  </Typography>
+                </Alert>
+              ) : null}
 
               <Stack direction="row" gap={1} flexWrap="wrap" useFlexGap>
                 {entry.tags.map((tag) => (
