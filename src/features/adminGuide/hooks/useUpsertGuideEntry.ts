@@ -9,8 +9,13 @@ export function useUpsertGuideEntry() {
 
   return useMutation({
     mutationFn: async (input: UpsertGuideEntryInput) => upsertGuideEntry(input),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["guideEntries"] });
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["guideEntries"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["guideEntry", variables.id],
+        }),
+      ]);
     },
   });
 }
