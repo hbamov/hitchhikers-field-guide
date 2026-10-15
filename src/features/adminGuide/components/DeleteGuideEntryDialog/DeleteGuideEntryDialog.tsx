@@ -8,8 +8,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import type { GuideEntry } from "../../guide/types/guide.types";
-import { useDeleteGuideEntry } from "../hooks/useDeleteGuideEntry";
+import type { GuideEntry } from "../../../guide/types/guide.types";
+import { useDeleteGuideEntry } from "../../hooks/useDeleteGuideEntry";
 
 interface DeleteGuideEntryDialogProps {
   open: boolean;

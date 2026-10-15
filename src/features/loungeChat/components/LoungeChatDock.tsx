@@ -94,7 +94,8 @@ export function LoungeChatDock() {
         bottom: 0,
         right: { xs: 8, sm: 24 },
         width: { xs: "calc(100vw - 16px)", sm: 340 },
-        zIndex: (theme) => theme.zIndex.appBar + 1,
+        zIndex: (theme) => theme.zIndex.appBar + 1, // above app bar/content
+        // keep below dialog (default modal ~1300)
         borderRadius: "12px 12px 0 0",
         border: "1px solid rgba(255,255,255,.12)",
         borderBottom: 0,

@@ -21,11 +21,11 @@ import {
   GUIDE_DESCRIPTION_MAX,
   GUIDE_ADVISORY_MAX,
   GUIDE_TAGS_MAX,
-} from "../../guide/types/guide.types";
+} from "../../../guide/types/guide.types";
 import { useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
-import { useUpsertGuideEntry } from "../hooks/useUpsertGuideEntry";
+import { useUpsertGuideEntry } from "../../hooks/useUpsertGuideEntry";
 
 function parseTags(value?: string): string[] {
   return (value ?? "")

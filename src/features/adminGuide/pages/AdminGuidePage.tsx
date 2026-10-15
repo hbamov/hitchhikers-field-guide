@@ -11,8 +11,8 @@ import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useGuideEntries } from "../../guide/hooks/useGuideEntries";
 import type { GuideEntry } from "../../guide/types/guide.types";
-import { GuideEntryFormDialog } from "../components/guideEntryFormDialog";
-import { DeleteGuideEntryDialog } from "../components/DeleteGuideEntryDialog";
+import { GuideEntryFormDialog } from "../components/GuideEntryFormDialog/GuideEntryFormDialog";
+import { DeleteGuideEntryDialog } from "../components/DeleteGuideEntryDialog/DeleteGuideEntryDialog";
 
 export function AdminGuidePage() {
   const { data: entries = [], isLoading, isError, refetch } = useGuideEntries();

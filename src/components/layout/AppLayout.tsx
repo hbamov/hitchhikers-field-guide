@@ -149,7 +149,10 @@ export function AppLayout() {
           {/* Extra bottom padding so the minimized chat bar never covers content */}
           <Container
             maxWidth="md"
-            sx={{ py: { xs: 3, sm: 8 }, pb: { xs: 10, sm: 12 } }}
+            sx={{
+              py: { xs: 3, sm: 8 },
+              pb: { xs: 12, sm: 12 }, // keep enough room for dock bar + thumb reach
+            }}
           >
             <Outlet />
           </Container>
