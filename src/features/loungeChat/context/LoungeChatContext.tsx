@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -37,13 +38,32 @@ export function LoungeChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ChatStatus>("loading");
   const [isOpen, setIsOpen] = useState(false);
-  // Messages older than this don't count as unread
   const [lastReadMs, setLastReadMs] = useState(() => Date.now());
+
+  // Track previous user to detect account switches explicitly
+  const previousUidRef = useRef<string | undefined>(undefined);
+
+  // Hard reset whenever auth identity changes (sign out or switch account)
+  useEffect(() => {
+    const previousUid = previousUidRef.current;
+    const changed = previousUid !== uid;
+    if (!changed) return;
+
+    previousUidRef.current = uid;
+
+    setMessages([]);
+    setUnreadCountSafeReset();
+    setIsOpen(false);
+    setStatus(uid ? "loading" : "ready");
+  }, [uid]);
+
+  function setUnreadCountSafeReset() {
+    setLastReadMs(Date.now());
+  }
 
   useEffect(() => {
     if (!uid) return;
 
-    setStatus("loading");
     const unsubscribe = subscribeToChatMessages(
       (next) => {
         setMessages(next);
@@ -55,13 +75,12 @@ export function LoungeChatProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, [uid]);
 
-  // While the chat is open, everything is "read"
   useEffect(() => {
     if (isOpen) setLastReadMs(Date.now());
   }, [isOpen, messages]);
 
   const unreadCount = useMemo(() => {
-    if (isOpen) return 0;
+    if (!uid || isOpen) return 0;
     return messages.filter(
       (message) =>
         message.userId !== uid && message.createdAt.getTime() > lastReadMs,

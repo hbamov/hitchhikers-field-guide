@@ -19,19 +19,44 @@ export const LOUNGE_NAME = "The Restaurant at the End of the Universe";
 
 export function LoungeChatDock() {
   const { user } = useAuth();
-  const { messages, status, isOpen, unreadCount, toggle, send } =
+  const { messages, status, isOpen, unreadCount, toggle, close, send } =
     useLoungeChat();
 
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const listRef = useRef<HTMLDivElement | null>(null);
 
-  // Keep the newest message in view
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const headerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastMessageIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!isOpen || !listRef.current) return;
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages, isOpen]);
+
+  // Focus input when opened
+  useEffect(() => {
+    if (!isOpen) return;
+    inputRef.current?.focus();
+  }, [isOpen]);
+
+  // Escape closes panel and returns focus to header toggle
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+        headerButtonRef.current?.focus();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, close]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -50,6 +75,17 @@ export function LoungeChatDock() {
     }
   }
 
+  const latestMessage = messages[messages.length - 1];
+  const hasNewIncoming =
+    latestMessage &&
+    latestMessage.id !== lastMessageIdRef.current &&
+    latestMessage.userId !== user?.uid;
+
+  useEffect(() => {
+    if (!latestMessage) return;
+    lastMessageIdRef.current = latestMessage.id;
+  }, [latestMessage]);
+
   return (
     <Paper
       elevation={8}
@@ -65,14 +101,14 @@ export function LoungeChatDock() {
         overflow: "hidden",
       }}
     >
-      {/* Header: click anywhere to toggle */}
       <Box
+        ref={headerButtonRef}
         component="button"
         type="button"
         onClick={toggle}
         aria-expanded={isOpen}
         aria-controls="lounge-chat-panel"
-        aria-label={isOpen ? "Minimize chat" : "Open chat"}
+        aria-label={isOpen ? "Minimize lounge chat" : "Open lounge chat"}
         sx={{
           all: "unset",
           boxSizing: "border-box",
@@ -107,12 +143,34 @@ export function LoungeChatDock() {
       {isOpen ? (
         <Box
           id="lounge-chat-panel"
+          role="region"
+          aria-label={LOUNGE_NAME}
           sx={{ borderTop: "1px solid rgba(255,255,255,.08)" }}
         >
+          {/* SR-only polite announcement for new incoming messages */}
+          <Box
+            aria-live="polite"
+            aria-atomic="true"
+            sx={{
+              position: "absolute",
+              width: 1,
+              height: 1,
+              p: 0,
+              m: -1,
+              overflow: "hidden",
+              clip: "rect(0 0 0 0)",
+              whiteSpace: "nowrap",
+              border: 0,
+            }}
+          >
+            {hasNewIncoming
+              ? `${latestMessage.displayName} sent a new message.`
+              : ""}
+          </Box>
+
           <Box
             ref={listRef}
             sx={{ height: { xs: 320, sm: 360 }, overflowY: "auto", p: 1.5 }}
-            aria-live="polite"
           >
             {status === "loading" ? (
               <Box
@@ -200,6 +258,7 @@ export function LoungeChatDock() {
             sx={{ p: 1.5, borderTop: "1px solid rgba(255,255,255,.08)" }}
           >
             <TextField
+              inputRef={inputRef}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               placeholder="Say something to the lounge…"
@@ -211,6 +270,7 @@ export function LoungeChatDock() {
                   "aria-label": "Chat message",
                 },
               }}
+              helperText={`${draft.length}/${CHAT_MESSAGE_MAX}`}
             />
             <IconButton
               type="submit"
