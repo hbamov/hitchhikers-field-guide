@@ -134,12 +134,12 @@ describe("AuthPage", () => {
     expect(await screen.findByText("Dashboard")).toBeInTheDocument();
   });
 
-  it("shows a generic error and never the raw error message when sign in fails", async () => {
+  it("shows the friendly message from the auth layer when sign in fails", async () => {
     const user = userEvent.setup();
     mockAuth({
       signInWithEmail: vi
         .fn()
-        .mockRejectedValue(new Error("Firebase: Error (auth/internal-error)")),
+        .mockRejectedValue(new Error("Email or password is incorrect.")),
     });
 
     renderAuthPage("login");
@@ -148,10 +148,25 @@ describe("AuthPage", () => {
     await user.type(screen.getByLabelText("Password"), "wrong-password");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Email or password is incorrect.",
+    );
+    expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the generic message when sign in fails without a usable message", async () => {
+    const user = userEvent.setup();
+    mockAuth({ signInWithEmail: vi.fn().mockRejectedValue("boom") });
+
+    renderAuthPage("login");
+
+    await user.type(screen.getByLabelText("Email"), "arthur@dent.dev");
+    await user.type(screen.getByLabelText("Password"), "towel42");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Unable to continue. Please try again.");
-    expect(alert).not.toHaveTextContent("Firebase");
-    expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
+    expect(alert).not.toHaveTextContent("boom");
   });
 
   it("returns to the page the visitor originally asked for after signing in", async () => {
@@ -177,7 +192,9 @@ describe("AuthPage", () => {
     await user.type(screen.getByLabelText("Password"), "towel42");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
-    expect(await screen.findByText("Enter a valid email address.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Enter a valid email address."),
+    ).toBeInTheDocument();
     expect(auth.signInWithEmail).not.toHaveBeenCalled();
   });
 
@@ -190,9 +207,13 @@ describe("AuthPage", () => {
     await user.type(screen.getByLabelText("Name"), "Arthur Dent");
     await user.type(screen.getByLabelText("Email"), "arthur@dent.dev");
     await user.type(screen.getByLabelText("Password"), "12345");
-    await user.click(screen.getByRole("button", { name: "Create traveler account" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create traveler account" }),
+    );
 
-    expect(await screen.findByText("Use at least 6 characters.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Use at least 6 characters."),
+    ).toBeInTheDocument();
     expect(auth.register).not.toHaveBeenCalled();
   });
 
@@ -205,25 +226,37 @@ describe("AuthPage", () => {
     await user.type(screen.getByLabelText("Name"), " A ");
     await user.type(screen.getByLabelText("Email"), "arthur@dent.dev");
     await user.type(screen.getByLabelText("Password"), "towel42");
-    await user.click(screen.getByRole("button", { name: "Create traveler account" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create traveler account" }),
+    );
 
-    expect(await screen.findByText("Enter at least 2 characters.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Enter at least 2 characters."),
+    ).toBeInTheDocument();
     expect(auth.register).not.toHaveBeenCalled();
   });
 
-  it("shows a generic error when registration fails", async () => {
+  it("shows a specific error when user has an existing account", async () => {
     const user = userEvent.setup();
-    mockAuth({ register: vi.fn().mockRejectedValue(new Error("auth/email-already-in-use raw")) });
+    mockAuth({
+      register: vi
+        .fn()
+        .mockRejectedValue(
+          new Error("An account with this email already exists."),
+        ),
+    });
 
     renderAuthPage("register");
 
     await user.type(screen.getByLabelText("Name"), "Arthur Dent");
     await user.type(screen.getByLabelText("Email"), "arthur@dent.dev");
     await user.type(screen.getByLabelText("Password"), "towel42");
-    await user.click(screen.getByRole("button", { name: "Create traveler account" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create traveler account" }),
+    );
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Unable to continue. Please try again.",
+      "An account with this email already exists.",
     );
   });
 
@@ -235,7 +268,9 @@ describe("AuthPage", () => {
       renderAuthPage("login");
 
       await user.type(screen.getByLabelText("Email"), "nope");
-      await user.click(screen.getByRole("button", { name: "Forgot password?" }));
+      await user.click(
+        screen.getByRole("button", { name: "Forgot password?" }),
+      );
 
       expect(await screen.findByRole("alert")).toHaveTextContent(
         "Enter your email address first",
@@ -250,7 +285,9 @@ describe("AuthPage", () => {
       renderAuthPage("login");
 
       await user.type(screen.getByLabelText("Email"), "arthur@dent.dev");
-      await user.click(screen.getByRole("button", { name: "Forgot password?" }));
+      await user.click(
+        screen.getByRole("button", { name: "Forgot password?" }),
+      );
 
       expect(await screen.findByRole("status")).toHaveTextContent(
         "If an account exists for that email, a password reset link is on its way.",
@@ -260,12 +297,16 @@ describe("AuthPage", () => {
 
     it("shows an error when the reset email cannot be sent", async () => {
       const user = userEvent.setup();
-      mockAuth({ sendPasswordReset: vi.fn().mockRejectedValue(new Error("raw")) });
+      mockAuth({
+        sendPasswordReset: vi.fn().mockRejectedValue(new Error("raw")),
+      });
 
       renderAuthPage("login");
 
       await user.type(screen.getByLabelText("Email"), "arthur@dent.dev");
-      await user.click(screen.getByRole("button", { name: "Forgot password?" }));
+      await user.click(
+        screen.getByRole("button", { name: "Forgot password?" }),
+      );
 
       expect(await screen.findByRole("alert")).toHaveTextContent(
         "Could not send reset email.",
@@ -277,7 +318,9 @@ describe("AuthPage", () => {
 
       renderAuthPage("register");
 
-      expect(screen.queryByRole("button", { name: "Forgot password?" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Forgot password?" }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -287,9 +330,13 @@ describe("AuthPage", () => {
 
     renderAuthPage("login");
 
-    expect(screen.getByText(/Firebase is not configured yet/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Firebase is not configured yet/),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign in" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Forgot password?" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Forgot password?" }),
+    ).toBeDisabled();
   });
 
   it("links between login and register", () => {
@@ -297,9 +344,8 @@ describe("AuthPage", () => {
 
     renderAuthPage("login");
 
-    expect(screen.getByRole("link", { name: "Create an account" })).toHaveAttribute(
-      "href",
-      "/register",
-    );
+    expect(
+      screen.getByRole("link", { name: "Create an account" }),
+    ).toHaveAttribute("href", "/register");
   });
 });
