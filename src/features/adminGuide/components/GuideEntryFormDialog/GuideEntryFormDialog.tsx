@@ -126,7 +126,7 @@ export function GuideEntryFormDialog({
         category: values.category,
         summary: values.summary,
         classification: values.classification,
-        tags: values.tags ? values.tags.split(",") : [],
+        tags: values.tags ? parseTags(values.tags) : [],
         description: values.description,
         travelAdvisory: values.travelAdvisory,
       });

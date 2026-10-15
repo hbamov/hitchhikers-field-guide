@@ -44,6 +44,7 @@ export function CreateTravelTaskDialog({
         ) : null}
 
         <TravelTaskForm
+          mode="create"
           onSubmit={handleCreate}
           onCancel={onClose}
           submitting={createTaskMutation.isPending}

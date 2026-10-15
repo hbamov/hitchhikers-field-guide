@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   AppBar,
   Box,
@@ -7,6 +8,8 @@ import {
   Stack,
   Toolbar,
   Typography,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import { LogOut, Orbit } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
@@ -17,6 +20,7 @@ import { LoungeChatDock } from "../../features/loungeChat/components/LoungeChatD
 
 export function AppLayout() {
   const { user, signOutUser } = useAuth();
+  const [signOutError, setSignOutError] = useState<string | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -30,9 +34,14 @@ export function AppLayout() {
   ];
 
   async function handleSignOut() {
-    await signOutUser();
-    queryClient.clear();
-    navigate("/login", { replace: true });
+    try {
+      setSignOutError(null);
+      await signOutUser();
+      queryClient.clear();
+      navigate("/login", { replace: true });
+    } catch {
+      setSignOutError("Couldn’t sign you out. Please try again.");
+    }
   }
 
   return (
@@ -156,6 +165,16 @@ export function AppLayout() {
           >
             <Outlet />
           </Container>
+
+          <Snackbar
+            open={Boolean(signOutError)}
+            autoHideDuration={4000}
+            onClose={() => setSignOutError(null)}
+          >
+            <Alert severity="error" onClose={() => setSignOutError(null)}>
+              {signOutError}
+            </Alert>
+          </Snackbar>
 
           <LoungeChatDock />
         </Box>

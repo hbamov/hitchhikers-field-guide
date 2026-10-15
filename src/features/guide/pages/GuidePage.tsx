@@ -44,7 +44,6 @@ export function GuidePage() {
   const {
     data: guideEntries = [],
     isLoading,
-    error,
     isError,
     refetch,
   } = useGuideEntries();

@@ -9,6 +9,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  Snackbar,
 } from "@mui/material";
 import { Plus } from "lucide-react";
 import { useAuth } from "../../auth/context/AuthContext";
@@ -29,6 +30,7 @@ export function TravelTasksPage() {
   const [editingTask, setEditingTask] = useState<TravelTask | null>(null);
   const [deletingTask, setDeletingTask] = useState<TravelTask | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [toggleError, setToggleError] = useState<string | null>(null);
 
   const {
     data: tasks = [],
@@ -67,7 +69,7 @@ export function TravelTasksPage() {
         },
       });
     } catch {
-      // TODO Option al: show snackbar/toast later
+      setToggleError("Couldn’t update that checklist item. Please try again.");
     }
   }
 
@@ -177,6 +179,13 @@ export function TravelTasksPage() {
         onClose={() => setDeletingTask(null)}
         userId={user?.uid}
         task={deletingTask}
+      />
+
+      <Snackbar
+        open={Boolean(toggleError)}
+        autoHideDuration={4000}
+        onClose={() => setToggleError(null)}
+        message={toggleError}
       />
     </Stack>
   );

@@ -36,7 +36,7 @@ export function LoungeChatProvider({ children }: { children: ReactNode }) {
   const displayName = user?.displayName || "Hitchhiker";
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [status, setStatus] = useState<ChatStatus>("loading");
+  const [status, setStatus] = useState<ChatStatus>(uid ? "loading" : "ready");
   const [isOpen, setIsOpen] = useState(false);
   const [lastReadMs, setLastReadMs] = useState(() => Date.now());
 

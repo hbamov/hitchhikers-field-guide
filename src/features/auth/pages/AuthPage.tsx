@@ -89,7 +89,11 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         navigate("/dashboard", { replace: true });
       }
     } catch (error) {
-      setFormError(authMessages.errors.unableToContinue);
+      setFormError(
+        error instanceof Error && error.message
+          ? error.message
+          : authMessages.errors.unableToContinue,
+      );
     } finally {
       setBusy(false);
     }
