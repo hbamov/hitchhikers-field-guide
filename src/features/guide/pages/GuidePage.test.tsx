@@ -1,139 +1,148 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useAuth } from "../../auth/context/AuthContext";
+import { createTravelTaskFromGuideEntry } from "../../travelTasks/services/travelTasks.service";
+import { makeAppUser, makeGuideEntry } from "../../../test/factories";
+import { renderWithProviders } from "../../../test/renderWithProviders";
+import { getGuideEntries } from "../services/guide.service";
 import { GuidePage } from "./GuidePage";
-import { useGuideEntries } from "../hooks/useGuideEntries";
-import type { GuideEntry } from "../types/guide.types";
 
-vi.mock("../hooks/useGuideEntries");
+vi.mock("../../auth/context/AuthContext", () => ({ useAuth: vi.fn() }));
+vi.mock("../services/guide.service");
+vi.mock("../../travelTasks/services/travelTasks.service");
 
-const mockedUseGuideEntries = vi.mocked(useGuideEntries);
+const earth = makeGuideEntry({
+  id: "earth",
+  name: "Earth",
+  summary: "Mostly harmless.",
+  tags: ["sol system", "terra"],
+});
+const fish = makeGuideEntry({
+  id: "fish",
+  name: "Babel Fish",
+  category: "species",
+  summary: "Translates any language.",
+  classification: "legendary",
+  tags: ["linguistics"],
+});
 
-const entries: GuideEntry[] = [
-  {
-    id: "1",
-    name: "Earth",
-    category: "planet",
-    summary: "Mostly harmless.",
-    classification: "mostly-harmless",
-    tags: ["sol system", "terra"],
-  },
-  {
-    id: "2",
-    name: "Babel Fish",
-    category: "species",
-    summary: "A small yellow leech-like fish that translates any language.",
-    classification: "legendary",
-    tags: ["language", "translation"],
-  },
-];
-
-function mockQueryResult(overrides: Record<string, unknown> = {}) {
-  const result = {
-    data: entries,
-    isLoading: false,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
-    ...overrides,
-  };
-  mockedUseGuideEntries.mockReturnValue(
-    result as unknown as ReturnType<typeof useGuideEntries>,
-  );
-  return result;
-}
+const searchBox = () => screen.getByRole("searchbox");
 
 describe("GuidePage", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    vi.mocked(useAuth).mockReturnValue({ user: makeAppUser() } as unknown as ReturnType<
+      typeof useAuth
+    >);
+    vi.mocked(getGuideEntries).mockResolvedValue([earth, fish]);
   });
 
-  it("shows a loading state while entries are fetched", () => {
-    mockQueryResult({ data: undefined, isLoading: true });
-
-    render(<GuidePage />);
+  it("shows loading placeholders, then the entries with a count", async () => {
+    renderWithProviders(<GuidePage />);
 
     expect(screen.getByText("Loading entries...")).toBeInTheDocument();
-  });
 
-  it("renders the fetched entries with a count", () => {
-    mockQueryResult();
-
-    render(<GuidePage />);
-
-    expect(screen.getByText("Earth")).toBeInTheDocument();
-    expect(screen.getByText("Babel Fish")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Earth" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Babel Fish" })).toBeInTheDocument();
     expect(screen.getByText("2 guide entries")).toBeInTheDocument();
   });
 
-  it("filters entries by search text", async () => {
+  it("shows a generic error and retries when the user clicks 'Try again'", async () => {
     const user = userEvent.setup();
-    mockQueryResult();
+    vi.mocked(getGuideEntries).mockRejectedValueOnce(new Error("firestore: secret detail"));
+    renderWithProviders(<GuidePage />);
 
-    render(<GuidePage />);
-
-    await user.type(
-      screen.getByPlaceholderText("Search planets, species, places..."),
-      "babel",
-    );
-
-    expect(screen.queryByText("Earth")).not.toBeInTheDocument();
-    expect(screen.getByText("Babel Fish")).toBeInTheDocument();
-    expect(screen.getByText("1 guide entry")).toBeInTheDocument();
-  });
-
-  it("filters entries by category", async () => {
-    const user = userEvent.setup();
-    mockQueryResult();
-
-    render(<GuidePage />);
-
-    await user.click(screen.getByRole("button", { name: "Species" }));
-
-    expect(screen.queryByText("Earth")).not.toBeInTheDocument();
-    expect(screen.getByText("Babel Fish")).toBeInTheDocument();
-  });
-
-  it("shows an empty state and lets the user clear filters", async () => {
-    const user = userEvent.setup();
-    mockQueryResult();
-
-    render(<GuidePage />);
-
-    await user.type(
-      screen.getByPlaceholderText("Search planets, species, places..."),
-      "vogon poetry",
-    );
-
-    expect(screen.getByText("No Guide entries found")).toBeInTheDocument();
-
-    await user.click(
-      screen.getAllByRole("button", { name: "Clear filters" })[0],
-    );
-
-    expect(screen.getByText("Earth")).toBeInTheDocument();
-    expect(screen.getByText("Babel Fish")).toBeInTheDocument();
-  });
-
-  it("shows an error alert and retries on demand", async () => {
-    const user = userEvent.setup();
-    const { refetch } = mockQueryResult({
-      data: undefined,
-      isError: true,
-      error: new Error("The Guide has been demolished."),
-    });
-
-    render(<GuidePage />);
-
-    expect(
-      screen.getByText("The Guide is temporarily unavailable"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("The Guide has been demolished."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("The Guide is temporarily unavailable")).toBeInTheDocument();
+    expect(screen.queryByText(/secret detail/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Try again" }));
 
-    expect(refetch).toHaveBeenCalledOnce();
+    expect(await screen.findByRole("heading", { name: "Earth" })).toBeInTheDocument();
+    expect(getGuideEntries).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    ["name", "babel"],
+    ["summary", "translates"],
+    ["tag", "SOL SYSTEM"],
+  ])("filters entries by %s (case-insensitive)", async (_field, term) => {
+    const user = userEvent.setup();
+    renderWithProviders(<GuidePage />);
+    await screen.findByRole("heading", { name: "Earth" });
+
+    await user.type(searchBox(), term);
+
+    const expected = term.toLowerCase() === "sol system" ? "Earth" : "Babel Fish";
+    const other = expected === "Earth" ? "Babel Fish" : "Earth";
+    expect(screen.getByRole("heading", { name: expected })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: other })).not.toBeInTheDocument();
+    expect(screen.getByText("1 guide entry")).toBeInTheDocument();
+  });
+
+  it("filters entries by category chip", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<GuidePage />);
+    await screen.findByRole("heading", { name: "Earth" });
+
+    await user.click(screen.getByRole("button", { name: "Species" }));
+
+    expect(screen.getByRole("heading", { name: "Babel Fish" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Earth" })).not.toBeInTheDocument();
+  });
+
+  it("shows an empty message and 'Clear filters' restores every entry", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<GuidePage />);
+    await screen.findByRole("heading", { name: "Earth" });
+
+    await user.type(searchBox(), "vogon poetry");
+    await user.click(screen.getByRole("button", { name: "Technology" }));
+
+    expect(screen.getByText("No Guide entries found")).toBeInTheDocument();
+
+    await user.click(screen.getAllByRole("button", { name: "Clear filters" })[0]);
+
+    expect(searchBox()).toHaveValue("");
+    expect(screen.getByRole("heading", { name: "Earth" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Babel Fish" })).toBeInTheDocument();
+  });
+
+  it("clears only the search text with the clear-search button", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<GuidePage />);
+    await screen.findByRole("heading", { name: "Earth" });
+    await user.type(searchBox(), "babel");
+
+    await user.click(screen.getByRole("button", { name: "Clear search" }));
+
+    expect(searchBox()).toHaveValue("");
+    expect(screen.getByRole("heading", { name: "Earth" })).toBeInTheDocument();
+  });
+
+  it("adds an entry to the checklist and confirms with a message", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<GuidePage />);
+    await screen.findByRole("heading", { name: "Earth" });
+
+    await user.click(screen.getAllByRole("button", { name: "Add to checklist" })[0]);
+
+    expect(await screen.findByText('Added "Earth" to your checklist.')).toBeInTheDocument();
+    expect(createTravelTaskFromGuideEntry).toHaveBeenCalledWith("user-1", earth);
+  });
+
+  it("shows an error message when adding to the checklist fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(createTravelTaskFromGuideEntry).mockRejectedValue(new Error("raw firestore error"));
+    renderWithProviders(<GuidePage />);
+    await screen.findByRole("heading", { name: "Earth" });
+
+    await user.click(screen.getAllByRole("button", { name: "Add to checklist" })[0]);
+
+    expect(
+      await screen.findByText("Couldn’t add this entry to your checklist. Please try again."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/raw firestore error/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Added /)).not.toBeInTheDocument();
   });
 });

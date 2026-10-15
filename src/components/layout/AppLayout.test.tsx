@@ -1,78 +1,81 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AppLayout } from "./AppLayout";
 import { useAuth } from "../../features/auth/context/AuthContext";
+import { makeAppUser } from "../../test/factories";
+import { renderWithProviders } from "../../test/renderWithProviders";
+import { AppLayout } from "./AppLayout";
 
-vi.mock("../../features/auth/context/AuthContext", () => ({
-  useAuth: vi.fn(),
+vi.mock("../../features/auth/context/AuthContext", () => ({ useAuth: vi.fn() }));
+vi.mock("../../features/loungeChat/services/chat.service", () => ({
+  subscribeToChatMessages: vi.fn(() => () => {}),
+  sendChatMessage: vi.fn(),
 }));
 
-const mockedUseAuth = vi.mocked(useAuth);
-
-function mockAuth(overrides: Record<string, unknown> = {}) {
-  const value = {
-    user: {
-      uid: "1",
-      email: "arthur@dent.dev",
-      displayName: "Arthur Dent",
-      role: "traveler",
-    },
+function mockAuth(role: "traveler" | "administrator", signOutUser = vi.fn().mockResolvedValue(undefined)) {
+  vi.mocked(useAuth).mockReturnValue({
+    user: makeAppUser({ role }),
     loading: false,
-    error: null,
-    firebaseConfigured: true,
-    signOutUser: vi.fn().mockResolvedValue(undefined),
-    ...overrides,
-  };
-  mockedUseAuth.mockReturnValue(value as unknown as ReturnType<typeof useAuth>);
-  return value;
+    signOutUser,
+  } as unknown as ReturnType<typeof useAuth>);
+  return signOutUser;
 }
 
-function renderAppLayout() {
-  return render(
-    <MemoryRouter initialEntries={["/dashboard"]}>
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<div>Dashboard content</div>} />
-        </Route>
-        <Route path="/login" element={<div>Login page</div>} />
-      </Routes>
-    </MemoryRouter>,
+function renderLayout() {
+  return renderWithProviders(
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard" element={<div>Dashboard content</div>} />
+      </Route>
+      <Route path="/login" element={<div>Login page</div>} />
+    </Routes>,
+    { route: "/dashboard" },
   );
 }
 
 describe("AppLayout", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  beforeEach(() => vi.resetAllMocks());
 
-  it("renders the title, navigation, user name, and outlet content", () => {
-    mockAuth();
+  it("shows the primary navigation, the user's name and the page content", () => {
+    mockAuth("traveler");
 
-    renderAppLayout();
+    renderLayout();
 
-    expect(
-      screen.getByText("The Hitchhiker’s Field Guide"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("navigation", { name: "Primary" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Guide" })).toBeInTheDocument();
+    const nav = screen.getByRole("navigation", { name: "Primary" });
+    expect(nav).toHaveTextContent("Dashboard");
+    expect(screen.getByRole("link", { name: "Guide" })).toHaveAttribute("href", "/guide");
+    expect(screen.getByRole("link", { name: "Checklist" })).toHaveAttribute("href", "/tasks");
     expect(screen.getByText("Arthur Dent")).toBeInTheDocument();
     expect(screen.getByText("Dashboard content")).toBeInTheDocument();
   });
 
-  it("signs out and navigates to the login page", async () => {
+  it("hides the admin link from travelers", () => {
+    mockAuth("traveler");
+
+    renderLayout();
+
+    expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
+  });
+
+  it("shows the admin link to administrators", () => {
+    mockAuth("administrator");
+
+    renderLayout();
+
+    expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin/guide");
+  });
+
+  it("signs out, clears cached data and returns to the login page", async () => {
     const user = userEvent.setup();
-    const auth = mockAuth();
+    const signOutUser = mockAuth("traveler");
+    const { queryClient } = renderLayout();
+    queryClient.setQueryData(["travelTasks", "user-1"], [{ id: "private" }]);
 
-    renderAppLayout();
+    await user.click(screen.getAllByRole("button", { name: "Sign out" })[0]);
 
-    await user.click(screen.getByRole("button", { name: "Sign out" }));
-
-    await waitFor(() => expect(auth.signOutUser).toHaveBeenCalledOnce());
+    await waitFor(() => expect(signOutUser).toHaveBeenCalledOnce());
     expect(await screen.findByText("Login page")).toBeInTheDocument();
+    expect(queryClient.getQueryData(["travelTasks", "user-1"])).toBeUndefined();
   });
 });
