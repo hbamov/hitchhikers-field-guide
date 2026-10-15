@@ -10,6 +10,8 @@ import {
   Typography,
   Alert,
   Snackbar,
+  Divider,
+  Avatar,
 } from "@mui/material";
 import { LogOut, Orbit } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
@@ -32,6 +34,12 @@ export function AppLayout() {
       ? [{ label: "Admin", to: "/admin/guide" }]
       : []),
   ];
+
+  function getInitials(name?: string | null): string {
+    const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "?";
+    return ((parts[0][0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase();
+  }
 
   async function handleSignOut() {
     try {
@@ -69,9 +77,9 @@ export function AppLayout() {
               <Toolbar
                 disableGutters
                 sx={{
-                  flexWrap: "wrap",
-                  columnGap: 2,
-                  py: { xs: 1, sm: 0 },
+                  flexWrap: "nowrap", // was wrap
+                  minHeight: 64,
+                  columnGap: 1.25,
                 }}
               >
                 <Stack
@@ -81,12 +89,16 @@ export function AppLayout() {
                   sx={{ minWidth: 0 }}
                 >
                   <Orbit color="#f2c14e" aria-hidden="true" />
-                  <Typography
-                    variant="subtitle1"
-                    noWrap
-                    sx={{ fontWeight: 750 }}
-                  >
+                  <Typography sx={{ display: { xs: "none", lg: "block" } }}>
                     The Hitchhiker’s Field Guide
+                  </Typography>
+                  <Typography
+                    sx={{
+                      display: { xs: "block", lg: "none" },
+                      fontWeight: 750,
+                    }}
+                  >
+                    HHFG
                   </Typography>
                 </Stack>
 
@@ -99,10 +111,11 @@ export function AppLayout() {
                   direction="row"
                   spacing={0.5}
                   sx={{
-                    order: { xs: 3, sm: 0 },
-                    width: { xs: "100%", sm: "auto" },
+                    flex: "1 1 auto",
+                    minWidth: 0,
                     overflowX: "auto",
-                    mt: { xs: 0.5, sm: 0 },
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": { display: "none" },
                   }}
                 >
                   {navItems.map((item) => (
@@ -117,7 +130,12 @@ export function AppLayout() {
                         minWidth: 0,
                         whiteSpace: "nowrap",
                         color: "text.secondary",
-                        "&.active": { color: "secondary.main" },
+                        borderRadius: 999,
+                        "&:hover": { color: "text.primary" },
+                        "&.active": {
+                          color: "secondary.main",
+                          bgcolor: "action.selected",
+                        },
                       }}
                     >
                       {item.label}
@@ -125,29 +143,63 @@ export function AppLayout() {
                   ))}
                 </Stack>
 
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  noWrap
-                  sx={{ display: { xs: "none", md: "block" }, maxWidth: 160 }}
-                >
-                  {user?.displayName}
-                </Typography>
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{
+                    mx: 1.5,
+                    my: 1.5,
+                    display: { xs: "none", sm: "block" },
+                  }}
+                />
 
-                {/* Sign out: icon on phones, text button from sm up */}
+                {/* Identity: not clickable, so it looks different from the nav */}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ display: { xs: "none", sm: "flex" }, mr: 1.5 }}
+                >
+                  <Avatar
+                    aria-hidden="true"
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      bgcolor: "primary.main",
+                      color: "primary.contrastText",
+                    }}
+                  >
+                    {getInitials(user?.displayName)}
+                  </Avatar>
+                  <Typography sx={{ display: { xs: "none", xl: "block" } }}>
+                    {user?.displayName}
+                  </Typography>
+                </Stack>
+
+                {/* Sign out: outlined so it reads as an action */}
                 <IconButton
-                  color="inherit"
-                  onClick={handleSignOut}
-                  aria-label="Sign out"
                   sx={{ display: { xs: "inline-flex", sm: "none" } }}
+                  aria-label="Sign out"
                 >
                   <LogOut size={18} />
                 </IconButton>
                 <Button
+                  variant="outlined"
                   color="inherit"
+                  size="small"
                   onClick={handleSignOut}
-                  startIcon={<LogOut size={17} />}
-                  sx={{ display: { xs: "none", sm: "inline-flex" } }}
+                  startIcon={<LogOut size={16} />}
+                  sx={{
+                    display: { xs: "none", sm: "inline-flex" },
+                    borderColor: "rgba(255,255,255,.24)",
+                    "&:hover": {
+                      borderColor: "error.light",
+                      color: "error.light",
+                      bgcolor: "transparent",
+                    },
+                  }}
                 >
                   Sign out
                 </Button>
