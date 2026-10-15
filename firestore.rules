@@ -97,10 +97,6 @@ service cloud.firestore {
       allow delete: if isTaskOwner(resource.data.userId);
     }
 
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
     match /chatMessages/{messageId} {
       allow read: if signedIn();
 
@@ -117,6 +113,10 @@ service cloud.firestore {
 
       allow update: if false;
       allow delete: if isAdministrator();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

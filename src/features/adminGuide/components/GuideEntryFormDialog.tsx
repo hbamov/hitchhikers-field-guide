@@ -10,27 +10,29 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { useMemo, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
 import {
+  GUIDE_NAME_MAX,
+  GUIDE_SUMMARY_MAX,
   GUIDE_CATEGORIES,
+  GUIDE_CLASSIFICATIONS,
   type GuideCategory,
   type GuideClassification,
   type GuideEntry,
   GUIDE_DESCRIPTION_MAX,
   GUIDE_ADVISORY_MAX,
+  GUIDE_TAGS_MAX,
 } from "../../guide/types/guide.types";
+import { useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
 import { useUpsertGuideEntry } from "../hooks/useUpsertGuideEntry";
 
-const classificationValues = [
-  "mostly-harmless",
-  "safe",
-  "caution",
-  "dangerous",
-  "legendary",
-  "unknown",
-] as const;
+function parseTags(value?: string): string[] {
+  return (value ?? "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
 
 const schema = z.object({
   id: z
@@ -40,14 +42,22 @@ const schema = z.object({
   name: z
     .string()
     .min(1, "Name is required.")
-    .max(100, "Name must be 100 characters or fewer."),
+    .max(GUIDE_NAME_MAX, `Name must be ${GUIDE_NAME_MAX} characters or fewer.`),
   category: z.enum(GUIDE_CATEGORIES),
   summary: z
     .string()
     .min(1, "Summary is required.")
-    .max(1000, "Summary must be 1000 characters or fewer."),
-  classification: z.enum(classificationValues),
-  tags: z.string().optional(),
+    .max(
+      GUIDE_SUMMARY_MAX,
+      `Summary must be ${GUIDE_SUMMARY_MAX} characters or fewer.`,
+    ),
+  classification: z.enum(GUIDE_CLASSIFICATIONS),
+  tags: z
+    .string()
+    .optional()
+    .refine((value) => parseTags(value).length <= GUIDE_TAGS_MAX, {
+      message: `Use at most ${GUIDE_TAGS_MAX} tags.`,
+    }),
   description: z
     .string()
     .max(
@@ -196,7 +206,7 @@ export function GuideEntryFormDialog({
                 error={!!errors.classification}
                 helperText={errors.classification?.message}
               >
-                {classificationValues.map((value) => (
+                {GUIDE_CLASSIFICATIONS.map((value) => (
                   <MenuItem key={value} value={value}>
                     {value}
                   </MenuItem>

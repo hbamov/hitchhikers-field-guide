@@ -10,6 +10,7 @@ import {
 import { db } from "../../../shared/firebase/firebase";
 import {
   guideEntrySchema,
+  guideEntryWriteSchema,
   type GuideCategory,
   type GuideClassification,
   type GuideEntry,
@@ -78,7 +79,7 @@ export async function upsertGuideEntry(
     ...(travelAdvisory ? { travelAdvisory } : {}),
   };
 
-  const parsed = guideEntrySchema.safeParse(payload);
+  const parsed = guideEntryWriteSchema.safeParse(payload);
   if (!parsed.success) throw new Error("Invalid guide entry data.");
 
   await setDoc(doc(db, "guideEntries", input.id), parsed.data);
