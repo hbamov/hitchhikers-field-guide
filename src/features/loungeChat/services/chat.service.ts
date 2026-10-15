@@ -31,17 +31,30 @@ export function subscribeToChatMessages(
   return onSnapshot(
     messagesQuery,
     (snapshot) => {
-      const messages: ChatMessage[] = snapshot.docs.map((messageDoc) => {
+      const messages: ChatMessage[] = [];
+
+      for (const messageDoc of snapshot.docs) {
         // "estimate" avoids null timestamps for our own pending writes
         const data = messageDoc.data({ serverTimestamps: "estimate" });
-        return {
+
+        const userId = typeof data.userId === "string" ? data.userId : "";
+        const text = typeof data.text === "string" ? data.text.trim() : "";
+        const createdAt = data.createdAt?.toDate?.();
+
+        // Skip anything that couldn't have been created through the app
+        if (!userId || !text || !(createdAt instanceof Date)) continue;
+
+        messages.push({
           id: messageDoc.id,
-          userId: String(data.userId ?? ""),
-          displayName: String(data.displayName ?? "Hitchhiker"),
-          text: String(data.text ?? ""),
-          createdAt: data.createdAt?.toDate?.() ?? new Date(),
-        };
-      });
+          userId,
+          displayName:
+            typeof data.displayName === "string" && data.displayName.trim()
+              ? data.displayName
+              : "Hitchhiker",
+          text,
+          createdAt,
+        });
+      }
 
       onData(messages.reverse()); // oldest -> newest
     },
