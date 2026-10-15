@@ -210,9 +210,8 @@ export function GuidePage() {
               The Guide is temporarily unavailable
             </Typography>
             <Typography variant="body2">
-              {error instanceof Error
-                ? error.message
-                : "Something went wrong while retrieving the collected knowledge of the galaxy."}
+              Something went wrong while retrieving the collected knowledge of
+              the galaxy.
             </Typography>
           </Alert>
         ) : filteredEntries.length > 0 ? (

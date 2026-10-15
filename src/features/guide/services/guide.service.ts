@@ -19,7 +19,9 @@ import {
 function parseGuideEntry(id: string, data: DocumentData): GuideEntry | null {
   const parsed = guideEntrySchema.safeParse(data);
   if (!parsed.success) {
-    console.warn(`Skipping invalid guide entry "${id}"`, parsed.error.issues);
+    if (import.meta.env.DEV) {
+      console.warn(`Skipping invalid guide entry "${id}"`, parsed.error.issues);
+    }
     return null;
   }
   return { id, ...parsed.data };

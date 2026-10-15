@@ -89,11 +89,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         navigate("/dashboard", { replace: true });
       }
     } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : authMessages.errors.unableToContinue,
-      );
+      setFormError(authMessages.errors.unableToContinue);
     } finally {
       setBusy(false);
     }
@@ -115,11 +111,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
       await sendPasswordReset(email);
       setNotice(authMessages.passwordReset.success);
     } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : authMessages.passwordReset.error,
-      );
+      setFormError(authMessages.passwordReset.error);
     } finally {
       setBusy(false);
     }

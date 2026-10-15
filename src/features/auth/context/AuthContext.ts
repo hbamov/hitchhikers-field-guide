@@ -41,14 +41,16 @@ function friendlyAuthError(error: unknown) {
     "auth/invalid-email": "Enter a valid email address.",
     "auth/too-many-requests": "Too many attempts. Wait a moment and try again.",
     "permission-denied":
-      "Your profile could not be read. Check the Firestore rules.",
+      "Your profile could not be read. Check your access permissions.",
   };
-  return (
-    messages[code ?? ""] ??
-    (error instanceof Error
-      ? error.message
-      : "Something went wrong. Please try again.")
-  );
+
+  if (messages[code ?? ""]) return messages[code ?? ""];
+
+  if (import.meta.env.DEV) {
+    console.warn("Unhandled auth error", { code, error });
+  }
+
+  return "Something went wrong. Please try again.";
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
