@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   InputAdornment,
   Snackbar,
   Stack,
@@ -86,10 +85,7 @@ export function GuidePage() {
   }
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{ px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}
-    >
+    <>
       <Stack spacing={4}>
         <Box>
           <Typography
@@ -263,6 +259,6 @@ export function GuidePage() {
         onClose={() => setNoticeError(null)}
         message={noticeError}
       />
-    </Container>
+    </>
   );
 }
