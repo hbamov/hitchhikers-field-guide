@@ -6,6 +6,9 @@ import {
   CircularProgress,
   Stack,
   Typography,
+  alpha,
+  Chip,
+  Box,
 } from "@mui/material";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -13,6 +16,10 @@ import { useGuideEntries } from "../../guide/hooks/useGuideEntries";
 import type { GuideEntry } from "../../guide/types/guide.types";
 import { GuideEntryFormDialog } from "../components/GuideEntryFormDialog/GuideEntryFormDialog";
 import { DeleteGuideEntryDialog } from "../components/DeleteGuideEntryDialog/DeleteGuideEntryDialog";
+import {
+  getCategoryMeta,
+  getClassificationMeta,
+} from "../../guide/utils/guideDisplay";
 
 export function AdminGuidePage() {
   const { data: entries = [], isLoading, isError, refetch } = useGuideEntries();
@@ -84,40 +91,110 @@ export function AdminGuidePage() {
       ) : sortedEntries.length === 0 ? (
         <Alert severity="info">No Guide entries found.</Alert>
       ) : (
-        <Stack spacing={1.25}>
-          {sortedEntries.map((entry) => (
-            <Card key={entry.id} variant="outlined">
-              <CardContent
+        <Stack
+          component="ul"
+          spacing={1.25}
+          sx={{ listStyle: "none", m: 0, p: 0 }}
+        >
+          {sortedEntries.map((entry) => {
+            const category = getCategoryMeta(entry.category);
+            const classification = getClassificationMeta(entry.classification);
+            const CategoryIcon = category.icon;
+
+            return (
+              <Card
+                key={entry.id}
+                component="li"
+                variant="outlined"
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 1.5,
-                  flexWrap: "wrap",
+                  borderLeft: `4px solid ${classification.color}`,
+                  transition:
+                    "border-color 200ms ease, background-color 200ms ease",
+                  "&:hover": { bgcolor: "action.hover" },
                 }}
               >
-                <Stack spacing={0.25} sx={{ minWidth: 0 }}>
-                  <Typography variant="subtitle1">{entry.name}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {entry.id} · {entry.category} · {entry.classification}
-                  </Typography>
-                </Stack>
-
-                <Stack direction="row" spacing={1}>
-                  <Button size="small" onClick={() => openEdit(entry)}>
-                    Edit
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    onClick={() => setDeletingEntry(entry)}
+                <CardContent
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 2,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={2}
+                    sx={{ minWidth: 0 }}
                   >
-                    Delete
-                  </Button>
-                </Stack>
-              </CardContent>
-            </Card>
-          ))}
+                    <Box
+                      aria-hidden="true"
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        flexShrink: 0,
+                        display: "grid",
+                        placeItems: "center",
+                        borderRadius: 2,
+                        color: category.color,
+                        bgcolor: alpha(category.color, 0.14),
+                        border: `1px solid ${alpha(category.color, 0.35)}`,
+                      }}
+                    >
+                      <CategoryIcon size={22} />
+                    </Box>
+
+                    <Stack spacing={0.75} sx={{ minWidth: 0 }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 700 }}
+                        noWrap
+                      >
+                        {entry.name}
+                      </Typography>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: category.color,
+                            fontWeight: 600,
+                            letterSpacing: ".06em",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {category.label}
+                        </Typography>
+                        <Chip
+                          size="small"
+                          label={classification.label}
+                          sx={{
+                            fontWeight: 600,
+                            color: classification.color,
+                            bgcolor: alpha(classification.color, 0.14),
+                            border: `1px solid ${alpha(classification.color, 0.4)}`,
+                          }}
+                        />
+                      </Stack>
+                    </Stack>
+                  </Stack>
+
+                  <Stack direction="row" spacing={1}>
+                    <Button size="small" onClick={() => openEdit(entry)}>
+                      Edit
+                    </Button>
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={() => setDeletingEntry(entry)}
+                    >
+                      Delete
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
+            );
+          })}
         </Stack>
       )}
 

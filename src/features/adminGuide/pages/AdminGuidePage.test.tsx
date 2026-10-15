@@ -25,26 +25,32 @@ describe("AdminGuidePage", () => {
     vi.mocked(getGuideEntries).mockResolvedValue([earth, fish]);
   });
 
-  it("shows a loading state, then entries sorted by name with their metadata", async () => {
+  it("shows a loading state, then entries sorted by name with category and classification", async () => {
     renderWithProviders(<AdminGuidePage />);
     expect(screen.getByText("Loading entries…")).toBeInTheDocument();
 
     expect(await screen.findByText("Babel Fish")).toBeInTheDocument();
 
-    const names = screen.getAllByRole("button", { name: "Edit" });
-    expect(names).toHaveLength(2);
-    expect(screen.getByText("babel-fish · species · legendary")).toBeInTheDocument();
-    expect(
-      screen.getByText("Babel Fish").compareDocumentPosition(screen.getByText("Earth")) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(2);
+
+    // Sorted by name: Babel Fish first, then Earth
+    expect(within(items[0]).getByText("Babel Fish")).toBeInTheDocument();
+    expect(within(items[0]).getByText("Species")).toBeInTheDocument();
+    expect(within(items[0]).getByText("Legendary")).toBeInTheDocument();
+    expect(within(items[1]).getByText("Earth")).toBeInTheDocument();
+
+    // The internal ID is no longer shown
+    expect(screen.queryByText(/babel-fish/)).not.toBeInTheDocument();
   });
 
   it("shows an empty message when there are no entries", async () => {
     vi.mocked(getGuideEntries).mockResolvedValue([]);
     renderWithProviders(<AdminGuidePage />);
 
-    expect(await screen.findByText("No Guide entries found.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("No Guide entries found."),
+    ).toBeInTheDocument();
   });
 
   it("shows an error and retries loading", async () => {
@@ -52,7 +58,9 @@ describe("AdminGuidePage", () => {
     vi.mocked(getGuideEntries).mockRejectedValueOnce(new Error("denied"));
     renderWithProviders(<AdminGuidePage />);
 
-    expect(await screen.findByText("Couldn’t load Guide entries.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Couldn’t load Guide entries."),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Try again" }));
 
@@ -64,9 +72,13 @@ describe("AdminGuidePage", () => {
     renderWithProviders(<AdminGuidePage />);
     await screen.findByText("Earth");
 
-    await user.click(screen.getByRole("button", { name: "Create Guide entry" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create Guide entry" }),
+    );
 
-    const dialog = await screen.findByRole("dialog", { name: "Create Guide entry" });
+    const dialog = await screen.findByRole("dialog", {
+      name: "Create Guide entry",
+    });
     expect(within(dialog).getByLabelText("Entry ID")).toHaveValue("");
     expect(within(dialog).getByLabelText("Entry ID")).toBeEnabled();
   });
@@ -79,12 +91,16 @@ describe("AdminGuidePage", () => {
     const row = screen.getByText("Earth").closest("div")!.parentElement!;
     await user.click(within(row).getByRole("button", { name: "Edit" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Edit Guide entry" });
+    const dialog = await screen.findByRole("dialog", {
+      name: "Edit Guide entry",
+    });
     expect(within(dialog).getByLabelText("Name")).toHaveValue("Earth");
 
     await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
 
-    await vi.waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
   });
 
   it("asks for confirmation before deleting and deletes the chosen entry", async () => {
@@ -95,14 +111,18 @@ describe("AdminGuidePage", () => {
     const row = screen.getByText("Earth").closest("div")!.parentElement!;
     await user.click(within(row).getByRole("button", { name: "Delete" }));
 
-    const dialog = await screen.findByRole("dialog", { name: "Delete Guide entry?" });
+    const dialog = await screen.findByRole("dialog", {
+      name: "Delete Guide entry?",
+    });
     expect(dialog).toHaveTextContent("“Earth” will be permanently removed.");
     expect(removeGuideEntry).not.toHaveBeenCalled();
 
     await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
     expect(removeGuideEntry).toHaveBeenCalledWith("earth");
-    await vi.waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
   });
 
   it("does not delete when the confirmation is cancelled", async () => {
@@ -116,12 +136,16 @@ describe("AdminGuidePage", () => {
     await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
 
     expect(removeGuideEntry).not.toHaveBeenCalled();
-    await vi.waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
   });
 
   it("shows a generic error and keeps the dialog open when deleting fails", async () => {
     const user = userEvent.setup();
-    vi.mocked(removeGuideEntry).mockRejectedValue(new Error("permission-denied raw"));
+    vi.mocked(removeGuideEntry).mockRejectedValue(
+      new Error("permission-denied raw"),
+    );
     renderWithProviders(<AdminGuidePage />);
     await screen.findByText("Earth");
 
@@ -130,7 +154,11 @@ describe("AdminGuidePage", () => {
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
-    expect(await within(dialog).findByText("Couldn’t delete Guide entry. Please try again.")).toBeInTheDocument();
+    expect(
+      await within(dialog).findByText(
+        "Couldn’t delete Guide entry. Please try again.",
+      ),
+    ).toBeInTheDocument();
     expect(dialog).not.toHaveTextContent("raw");
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
@@ -138,7 +166,9 @@ describe("AdminGuidePage", () => {
   it("disables the dialog buttons while the delete is in flight", async () => {
     const user = userEvent.setup();
     let finish!: () => void;
-    vi.mocked(removeGuideEntry).mockReturnValue(new Promise<void>((r) => (finish = r)));
+    vi.mocked(removeGuideEntry).mockReturnValue(
+      new Promise<void>((r) => (finish = r)),
+    );
     renderWithProviders(<AdminGuidePage />);
     await screen.findByText("Earth");
 
@@ -147,9 +177,15 @@ describe("AdminGuidePage", () => {
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
-    expect(await within(dialog).findByRole("button", { name: "Deleting..." })).toBeDisabled();
-    expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(
+      await within(dialog).findByRole("button", { name: "Deleting..." }),
+    ).toBeDisabled();
+    expect(
+      within(dialog).getByRole("button", { name: "Cancel" }),
+    ).toBeDisabled();
     finish();
-    await vi.waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
   });
 });

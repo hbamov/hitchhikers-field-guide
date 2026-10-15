@@ -8,6 +8,7 @@ import {
   Plus,
 } from "lucide-react";
 import {
+  alpha,
   Box,
   Button,
   Card,
@@ -18,6 +19,7 @@ import {
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import type { GuideCategory, GuideEntry } from "../../types/guide.types";
+import { getClassificationMeta } from "../../utils/guideDisplay";
 
 interface GuideCardProps {
   entry: GuideEntry;
@@ -33,21 +35,13 @@ const categoryIcons: Record<GuideCategory, typeof Globe2> = {
   object: Package,
 };
 
-const classificationLabels = {
-  "mostly-harmless": "Mostly harmless",
-  safe: "Safe",
-  caution: "Caution advised",
-  dangerous: "Dangerous",
-  legendary: "Legendary",
-  unknown: "Unknown",
-};
-
 export function GuideCard({
   entry,
   onAddToChecklist,
   addingToChecklist = false,
 }: GuideCardProps) {
   const Icon = categoryIcons[entry.category] ?? CircleHelp;
+  const classification = getClassificationMeta(entry.classification);
 
   return (
     <Card
@@ -89,9 +83,15 @@ export function GuideCard({
 
           <Chip
             size="small"
-            variant="outlined"
-            label={classificationLabels[entry.classification]}
-            sx={{ textTransform: "uppercase", letterSpacing: "0.04em" }}
+            label={classification.label}
+            sx={{
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+              fontWeight: 600,
+              color: classification.color,
+              bgcolor: alpha(classification.color, 0.14),
+              border: `1px solid ${alpha(classification.color, 0.4)}`,
+            }}
           />
         </Stack>
 
@@ -105,12 +105,6 @@ export function GuideCard({
         >
           {entry.summary}
         </Typography>
-
-        <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 2.5 }}>
-          {entry.tags.slice(0, 3).map((tag) => (
-            <Chip key={tag} size="small" label={tag} variant="outlined" />
-          ))}
-        </Stack>
 
         <Stack
           direction="row"

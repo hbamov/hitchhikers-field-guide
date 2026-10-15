@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardContent,
   Chip,
   List,
@@ -11,9 +12,8 @@ import {
   Skeleton,
   Stack,
   Typography,
-  CardActionArea,
+  alpha,
 } from "@mui/material";
-import { guideCategoryIconMap } from "../../features/guide/utils/guideCategoryIcon";
 import { ShieldAlert, Sparkles, MessagesSquare } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useMemo } from "react";
@@ -22,20 +22,14 @@ import { useTravelTasks } from "../../features/travelTasks/hooks/useTravelTasks"
 import { useGuideEntries } from "../../features/guide/hooks/useGuideEntries";
 import { selectFeaturedGuideEntry } from "../../features/guide/utils/selectFeaturedGuideEntry";
 import { dashboardMessages } from "./messages/dashboardMessages";
-import type { GuideClassification } from "../../features/guide/types/guide.types";
 import { useLoungeChat } from "../../features/loungeChat/context/LoungeChatContext";
 import { LOUNGE_NAME } from "../../features/loungeChat/components/LoungeChatDock/LoungeChatDock";
+import {
+  getCategoryMeta,
+  getClassificationMeta,
+} from "../../features/guide/utils/guideDisplay";
 
 const PREVIEW_LIMIT = 3;
-
-const classificationLabels: Record<GuideClassification, string> = {
-  "mostly-harmless": "MOSTLY HARMLESS",
-  safe: "SAFE",
-  caution: "CAUTION ADVISED",
-  dangerous: "DANGEROUS",
-  legendary: "LEGENDARY",
-  unknown: "UNKNOWN",
-};
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -62,9 +56,13 @@ export function DashboardPage() {
     [guideEntries],
   );
 
-  const FeaturedCategoryIcon = featuredEntry
-    ? guideCategoryIconMap[featuredEntry.category]
+  const featuredCategory = featuredEntry
+    ? getCategoryMeta(featuredEntry.category)
     : null;
+  const featuredClassification = featuredEntry
+    ? getClassificationMeta(featuredEntry.classification)
+    : null;
+  const FeaturedCategoryIcon = featuredCategory?.icon ?? null;
 
   const {
     messages: chatMessages,
@@ -72,6 +70,7 @@ export function DashboardPage() {
     unreadCount,
     open: openChat,
   } = useLoungeChat();
+
   const latestMessages = chatMessages.slice(-3);
 
   return (
@@ -109,9 +108,14 @@ export function DashboardPage() {
           gap: 2,
         }}
       >
-        {/* Featured Destination */}
-        {/* Featured Destination */}
-        <Card>
+        {/* Featured destination */}
+        <Card
+          sx={{
+            ...(featuredClassification
+              ? { borderLeft: `4px solid ${featuredClassification.color}` }
+              : null),
+          }}
+        >
           <CardContent sx={{ p: 3 }}>
             <Stack
               direction="row"
@@ -135,7 +139,7 @@ export function DashboardPage() {
               <Typography color="text.secondary" sx={{ mt: 1.5 }}>
                 We couldn’t load featured Guide data right now.
               </Typography>
-            ) : featuredEntry ? (
+            ) : featuredEntry && featuredCategory && featuredClassification ? (
               <>
                 <Typography variant="h5" sx={{ mt: 1 }}>
                   {featuredEntry.name}
@@ -154,17 +158,16 @@ export function DashboardPage() {
                 >
                   <Chip
                     size="small"
-                    label={`CLASSIFICATION: ${classificationLabels[featuredEntry.classification]}`}
-                    color="secondary"
-                    variant="outlined"
+                    label={featuredClassification.label}
+                    sx={{
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: ".04em",
+                      color: featuredClassification.color,
+                      bgcolor: alpha(featuredClassification.color, 0.14),
+                      border: `1px solid ${alpha(featuredClassification.color, 0.45)}`,
+                    }}
                   />
-                  {featuredEntry.tags[0] ? (
-                    <Chip
-                      size="small"
-                      label={`TAG: ${featuredEntry.tags[0].toLowerCase()}`}
-                      variant="outlined"
-                    />
-                  ) : null}
                 </Stack>
 
                 <Button
@@ -184,7 +187,7 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Checklist Preview */}
+        {/* Checklist preview */}
         <Card>
           <CardContent sx={{ p: 3 }}>
             <Stack
