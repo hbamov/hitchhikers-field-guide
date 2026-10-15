@@ -1,22 +1,30 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { makeAppUser, makeTravelTask } from "../../../test/factories";
-import { renderWithProviders } from "../../../test/renderWithProviders";
-import { useAuth } from "../../auth/context/AuthContext";
+import { makeAppUser, makeTravelTask } from "../../../../test/factories";
+import { renderWithProviders } from "../../../../test/renderWithProviders";
+import { useAuth } from "../../../auth/context/AuthContext";
 import {
   createTravelTask,
   deleteTravelTask,
   getTravelTasks,
   updateTravelTask,
-} from "../services/travelTasks.service";
+} from "../../services/travelTasks.service";
 import { TravelTasksPage } from "./TravelTasksPage";
 
 vi.mock("../../auth/context/AuthContext", () => ({ useAuth: vi.fn() }));
 vi.mock("../services/travelTasks.service");
 
-const towel = makeTravelTask({ id: "t1", title: "Pack a towel", priority: "high" });
-const fish = makeTravelTask({ id: "t2", title: "Buy a Babel fish", priority: "low" });
+const towel = makeTravelTask({
+  id: "t1",
+  title: "Pack a towel",
+  priority: "high",
+});
+const fish = makeTravelTask({
+  id: "t2",
+  title: "Buy a Babel fish",
+  priority: "low",
+});
 const done = makeTravelTask({
   id: "t3",
   title: "Learn to fly",
@@ -105,7 +113,9 @@ describe("TravelTasksPage", () => {
     renderWithProviders(<TravelTasksPage />);
     await screen.findByText("Pack a towel");
 
-    await user.click(screen.getAllByRole("checkbox", { name: "Mark as completed" })[0]);
+    await user.click(
+      screen.getAllByRole("checkbox", { name: "Mark as completed" })[0],
+    );
 
     await waitFor(() => expect(updateTravelTask).toHaveBeenCalled());
     const [taskId, input] = vi.mocked(updateTravelTask).mock.calls[0];
@@ -135,7 +145,9 @@ describe("TravelTasksPage", () => {
     renderWithProviders(<TravelTasksPage />);
     await screen.findByText("Pack a towel");
 
-    await user.click(screen.getAllByRole("checkbox", { name: "Mark as completed" })[0]);
+    await user.click(
+      screen.getAllByRole("checkbox", { name: "Mark as completed" })[0],
+    );
 
     await waitFor(() => expect(updateTravelTask).toHaveBeenCalled());
     expect(await screen.findByText("Pack a towel")).toBeInTheDocument();
@@ -147,17 +159,23 @@ describe("TravelTasksPage", () => {
     await screen.findByText("Pack a towel");
 
     await user.click(screen.getAllByRole("button", { name: "Delete" })[0]);
-    const dialog = await screen.findByRole("dialog", { name: "Delete checklist item?" });
+    const dialog = await screen.findByRole("dialog", {
+      name: "Delete checklist item?",
+    });
     expect(within(dialog).getByText(/Pack a towel/)).toBeInTheDocument();
     await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
     await waitFor(() => expect(deleteTravelTask).toHaveBeenCalledWith("t1"));
-    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
   });
 
   it("keeps the delete dialog open with a generic error when deleting fails", async () => {
     const user = userEvent.setup();
-    vi.mocked(deleteTravelTask).mockRejectedValue(new Error("permission-denied"));
+    vi.mocked(deleteTravelTask).mockRejectedValue(
+      new Error("permission-denied"),
+    );
     renderWithProviders(<TravelTasksPage />);
     await screen.findByText("Pack a towel");
 
@@ -166,9 +184,13 @@ describe("TravelTasksPage", () => {
     await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
     expect(
-      await within(dialog).findByText("Couldn’t delete checklist item. Please try again."),
+      await within(dialog).findByText(
+        "Couldn’t delete checklist item. Please try again.",
+      ),
     ).toBeInTheDocument();
-    expect(within(dialog).queryByText(/permission-denied/)).not.toBeInTheDocument();
+    expect(
+      within(dialog).queryByText(/permission-denied/),
+    ).not.toBeInTheDocument();
   });
 
   it("cancels deletion without calling the service", async () => {
@@ -180,7 +202,9 @@ describe("TravelTasksPage", () => {
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
 
-    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
     expect(deleteTravelTask).not.toHaveBeenCalled();
   });
 
@@ -189,14 +213,28 @@ describe("TravelTasksPage", () => {
     renderWithProviders(<TravelTasksPage />);
     await screen.findByText("Pack a towel");
 
-    await user.click(screen.getByRole("button", { name: "Add checklist item" }));
-    const dialog = await screen.findByRole("dialog", { name: "Add checklist item" });
-    await user.type(within(dialog).getByRole("textbox", { name: /Title/ }), "  Find tea  ");
-    await user.type(within(dialog).getByRole("textbox", { name: /Description/ }), "Earl Grey");
-    await user.click(within(dialog).getByRole("combobox", { name: "Priority" }));
+    await user.click(
+      screen.getByRole("button", { name: "Add checklist item" }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: "Add checklist item",
+    });
+    await user.type(
+      within(dialog).getByRole("textbox", { name: /Title/ }),
+      "  Find tea  ",
+    );
+    await user.type(
+      within(dialog).getByRole("textbox", { name: /Description/ }),
+      "Earl Grey",
+    );
+    await user.click(
+      within(dialog).getByRole("combobox", { name: "Priority" }),
+    );
     await user.click(await screen.findByRole("option", { name: "High" }));
     await user.type(within(dialog).getByLabelText(/Due date/), "2026-05-04");
-    await user.click(within(dialog).getByRole("button", { name: /Create item|Save changes/ }));
+    await user.click(
+      within(dialog).getByRole("button", { name: /Create item|Save changes/ }),
+    );
 
     await waitFor(() => expect(createTravelTask).toHaveBeenCalled());
     const [uid, input] = vi.mocked(createTravelTask).mock.calls[0];
@@ -214,10 +252,17 @@ describe("TravelTasksPage", () => {
     renderWithProviders(<TravelTasksPage />);
     await screen.findByText("Pack a towel");
 
-    await user.click(screen.getByRole("button", { name: "Add checklist item" }));
+    await user.click(
+      screen.getByRole("button", { name: "Add checklist item" }),
+    );
     const dialog = await screen.findByRole("dialog");
-    await user.type(within(dialog).getByRole("textbox", { name: /Title/ }), "Find tea");
-    await user.click(within(dialog).getByRole("button", { name: /Create item|Save changes/ }));
+    await user.type(
+      within(dialog).getByRole("textbox", { name: /Title/ }),
+      "Find tea",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: /Create item|Save changes/ }),
+    );
 
     await waitFor(() => expect(createTravelTask).toHaveBeenCalled());
     expect(vi.mocked(createTravelTask).mock.calls[0][1]).toEqual({
@@ -233,14 +278,23 @@ describe("TravelTasksPage", () => {
     renderWithProviders(<TravelTasksPage />);
     await screen.findByText("Pack a towel");
 
-    await user.click(screen.getByRole("button", { name: "Add checklist item" }));
+    await user.click(
+      screen.getByRole("button", { name: "Add checklist item" }),
+    );
     const dialog = await screen.findByRole("dialog");
-    const submit = within(dialog).getByRole("button", { name: /Create item|Save changes/ });
+    const submit = within(dialog).getByRole("button", {
+      name: /Create item|Save changes/,
+    });
 
     await user.click(submit);
-    expect(await within(dialog).findByText("Title is required.")).toBeInTheDocument();
+    expect(
+      await within(dialog).findByText("Title is required."),
+    ).toBeInTheDocument();
 
-    await user.type(within(dialog).getByRole("textbox", { name: /Title/ }), "x".repeat(101));
+    await user.type(
+      within(dialog).getByRole("textbox", { name: /Title/ }),
+      "x".repeat(101),
+    );
     await user.click(submit);
     expect(
       await within(dialog).findByText("Title must be 100 characters or fewer."),
@@ -250,17 +304,28 @@ describe("TravelTasksPage", () => {
 
   it("shows a generic error and keeps the create dialog open when saving fails", async () => {
     const user = userEvent.setup();
-    vi.mocked(createTravelTask).mockRejectedValue(new Error("firestore exploded"));
+    vi.mocked(createTravelTask).mockRejectedValue(
+      new Error("firestore exploded"),
+    );
     renderWithProviders(<TravelTasksPage />);
     await screen.findByText("Pack a towel");
 
-    await user.click(screen.getByRole("button", { name: "Add checklist item" }));
+    await user.click(
+      screen.getByRole("button", { name: "Add checklist item" }),
+    );
     const dialog = await screen.findByRole("dialog");
-    await user.type(within(dialog).getByRole("textbox", { name: /Title/ }), "Find tea");
-    await user.click(within(dialog).getByRole("button", { name: /Create item|Save changes/ }));
+    await user.type(
+      within(dialog).getByRole("textbox", { name: /Title/ }),
+      "Find tea",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: /Create item|Save changes/ }),
+    );
 
     expect(
-      await within(dialog).findByText("Couldn’t create checklist item. Please try again."),
+      await within(dialog).findByText(
+        "Couldn’t create checklist item. Please try again.",
+      ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/firestore exploded/)).not.toBeInTheDocument();
     expect(dialog).toBeInTheDocument();
@@ -281,14 +346,24 @@ describe("TravelTasksPage", () => {
     await screen.findByText("Pack a towel");
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
-    const dialog = await screen.findByRole("dialog", { name: "Edit checklist item" });
-    expect(within(dialog).getByRole("textbox", { name: /Title/ })).toHaveValue("Pack a towel");
-    expect(within(dialog).getByRole("textbox", { name: /Description/ })).toHaveValue("Big one");
+    const dialog = await screen.findByRole("dialog", {
+      name: "Edit checklist item",
+    });
+    expect(within(dialog).getByRole("textbox", { name: /Title/ })).toHaveValue(
+      "Pack a towel",
+    );
+    expect(
+      within(dialog).getByRole("textbox", { name: /Description/ }),
+    ).toHaveValue("Big one");
     expect(within(dialog).getByLabelText(/Due date/)).toHaveValue("2026-05-04");
 
-    await user.clear(within(dialog).getByRole("textbox", { name: /Description/ }));
+    await user.clear(
+      within(dialog).getByRole("textbox", { name: /Description/ }),
+    );
     await user.clear(within(dialog).getByLabelText(/Due date/));
-    await user.click(within(dialog).getByRole("button", { name: "Save changes" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Save changes" }),
+    );
 
     await waitFor(() =>
       expect(updateTravelTask).toHaveBeenCalledWith("t1", {
@@ -308,10 +383,14 @@ describe("TravelTasksPage", () => {
 
     await user.click(screen.getAllByRole("button", { name: "Edit" })[0]);
     const dialog = await screen.findByRole("dialog");
-    await user.click(within(dialog).getByRole("button", { name: "Save changes" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Save changes" }),
+    );
 
     expect(
-      await within(dialog).findByText("Couldn’t save changes. Please try again."),
+      await within(dialog).findByText(
+        "Couldn’t save changes. Please try again.",
+      ),
     ).toBeInTheDocument();
   });
 });

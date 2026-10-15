@@ -1,13 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { makeAppUser } from "../../test/factories";
-import { useAuth } from "../../features/auth/context/AuthContext";
+import { makeAppUser } from "../../../test/factories";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 import { AdminRoute } from "./AdminRoute";
 
-vi.mock("../../features/auth/context/AuthContext", () => ({ useAuth: vi.fn() }));
+vi.mock("../../features/auth/context/AuthContext", () => ({
+  useAuth: vi.fn(),
+}));
 
-function mockAuth(value: { user: ReturnType<typeof makeAppUser> | null; loading?: boolean }) {
+function mockAuth(value: {
+  user: ReturnType<typeof makeAppUser> | null;
+  loading?: boolean;
+}) {
   vi.mocked(useAuth).mockReturnValue({
     loading: false,
     ...value,

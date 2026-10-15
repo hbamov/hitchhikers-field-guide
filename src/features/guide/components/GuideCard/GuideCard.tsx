@@ -17,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import type { GuideCategory, GuideEntry } from "../types/guide.types";
+import type { GuideCategory, GuideEntry } from "../../types/guide.types";
 
 interface GuideCardProps {
   entry: GuideEntry;

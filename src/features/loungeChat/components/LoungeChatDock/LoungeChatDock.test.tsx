@@ -1,10 +1,10 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { makeAppUser, makeChatMessage } from "../../../test/factories";
-import { renderWithProviders } from "../../../test/renderWithProviders";
-import { useAuth } from "../../auth/context/AuthContext";
-import { useLoungeChat } from "../context/LoungeChatContext";
+import { makeAppUser, makeChatMessage } from "../../../../test/factories";
+import { renderWithProviders } from "../../../../test/renderWithProviders";
+import { useAuth } from "../../../auth/context/AuthContext";
+import { useLoungeChat } from "../../context/LoungeChatContext";
 import { LoungeChatDock, LOUNGE_NAME } from "./LoungeChatDock";
 
 vi.mock("../../auth/context/AuthContext", () => ({ useAuth: vi.fn() }));
@@ -45,8 +45,12 @@ describe("LoungeChatDock", () => {
     const header = screen.getByRole("button", { name: "Open lounge chat" });
     expect(header).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText(LOUNGE_NAME)).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: LOUNGE_NAME })).not.toBeInTheDocument();
-    expect(screen.queryByRole("textbox", { name: "Chat message" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: LOUNGE_NAME }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", { name: "Chat message" }),
+    ).not.toBeInTheDocument();
   });
 
   it("toggles when the header is clicked", async () => {
@@ -76,10 +80,9 @@ describe("LoungeChatDock", () => {
   it("opens with the input focused and shows an expanded header", () => {
     renderWithProviders(<LoungeChatDock />);
 
-    expect(screen.getByRole("button", { name: "Minimize lounge chat" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
+    expect(
+      screen.getByRole("button", { name: "Minimize lounge chat" }),
+    ).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("textbox", { name: "Chat message" })).toHaveFocus();
   });
 
@@ -90,7 +93,9 @@ describe("LoungeChatDock", () => {
     await user.keyboard("{Escape}");
 
     expect(close).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("button", { name: "Minimize lounge chat" })).toHaveFocus();
+    expect(
+      screen.getByRole("button", { name: "Minimize lounge chat" }),
+    ).toHaveFocus();
   });
 
   it("does not react to Escape while minimized", async () => {
@@ -119,7 +124,10 @@ describe("LoungeChatDock", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoungeChatDock />);
 
-    await user.type(screen.getByRole("textbox", { name: "Chat message" }), "Hello{Enter}");
+    await user.type(
+      screen.getByRole("textbox", { name: "Chat message" }),
+      "Hello{Enter}",
+    );
 
     expect(send).toHaveBeenCalledWith("Hello");
   });
@@ -130,9 +138,15 @@ describe("LoungeChatDock", () => {
     const sendButton = screen.getByRole("button", { name: "Send message" });
 
     expect(sendButton).toBeDisabled();
-    await user.type(screen.getByRole("textbox", { name: "Chat message" }), "   ");
+    await user.type(
+      screen.getByRole("textbox", { name: "Chat message" }),
+      "   ",
+    );
     expect(sendButton).toBeDisabled();
-    await user.type(screen.getByRole("textbox", { name: "Chat message" }), "hi");
+    await user.type(
+      screen.getByRole("textbox", { name: "Chat message" }),
+      "hi",
+    );
     expect(sendButton).toBeEnabled();
   });
 
@@ -156,7 +170,10 @@ describe("LoungeChatDock", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoungeChatDock />);
 
-    await user.type(screen.getByRole("textbox", { name: "Chat message" }), "abc");
+    await user.type(
+      screen.getByRole("textbox", { name: "Chat message" }),
+      "abc",
+    );
 
     expect(screen.getByText("3/500")).toBeInTheDocument();
   });
@@ -164,8 +181,18 @@ describe("LoungeChatDock", () => {
   it("labels other users' messages with their name but not the user's own", () => {
     mockChat({
       messages: [
-        makeChatMessage({ id: "1", userId: "user-2", displayName: "Ford Prefect", text: "Towel?" }),
-        makeChatMessage({ id: "2", userId: "user-1", displayName: "Arthur Dent", text: "Yes." }),
+        makeChatMessage({
+          id: "1",
+          userId: "user-2",
+          displayName: "Ford Prefect",
+          text: "Towel?",
+        }),
+        makeChatMessage({
+          id: "2",
+          userId: "user-1",
+          displayName: "Arthur Dent",
+          text: "Yes.",
+        }),
       ],
     });
     renderWithProviders(<LoungeChatDock />);
@@ -179,16 +206,22 @@ describe("LoungeChatDock", () => {
 
   it("announces new incoming messages from other users", () => {
     mockChat({
-      messages: [makeChatMessage({ userId: "user-2", displayName: "Ford Prefect" })],
+      messages: [
+        makeChatMessage({ userId: "user-2", displayName: "Ford Prefect" }),
+      ],
     });
     renderWithProviders(<LoungeChatDock />);
 
-    expect(screen.getByText("Ford Prefect sent a new message.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Ford Prefect sent a new message."),
+    ).toBeInTheDocument();
   });
 
   it("does not announce the user's own messages", () => {
     mockChat({
-      messages: [makeChatMessage({ userId: "user-1", displayName: "Arthur Dent" })],
+      messages: [
+        makeChatMessage({ userId: "user-1", displayName: "Arthur Dent" }),
+      ],
     });
     renderWithProviders(<LoungeChatDock />);
 
@@ -208,6 +241,8 @@ describe("LoungeChatDock", () => {
 
     mockChat({ status: "error" });
     renderWithProviders(<LoungeChatDock />);
-    expect(screen.getByText("We couldn’t reach the lounge right now.")).toBeInTheDocument();
+    expect(
+      screen.getByText("We couldn’t reach the lounge right now."),
+    ).toBeInTheDocument();
   });
 });

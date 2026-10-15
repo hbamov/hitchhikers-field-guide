@@ -1,6 +1,6 @@
 import { Alert, Box, CircularProgress } from "@mui/material";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../features/auth/context/AuthContext";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 
 export function AdminRoute() {
   const { user, loading } = useAuth();

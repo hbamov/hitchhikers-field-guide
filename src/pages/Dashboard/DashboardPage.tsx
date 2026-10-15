@@ -21,10 +21,10 @@ import { useAuth } from "../../features/auth/context/AuthContext";
 import { useTravelTasks } from "../../features/travelTasks/hooks/useTravelTasks";
 import { useGuideEntries } from "../../features/guide/hooks/useGuideEntries";
 import { selectFeaturedGuideEntry } from "../../features/guide/utils/selectFeaturedGuideEntry";
-import { dashboardMessages } from "./dashboardMessages";
+import { dashboardMessages } from "./messages/dashboardMessages";
 import type { GuideClassification } from "../../features/guide/types/guide.types";
 import { useLoungeChat } from "../../features/loungeChat/context/LoungeChatContext";
-import { LOUNGE_NAME } from "../../features/loungeChat/components/LoungeChatDock";
+import { LOUNGE_NAME } from "../../features/loungeChat/components/LoungeChatDock/LoungeChatDock";
 
 const PREVIEW_LIMIT = 3;
 

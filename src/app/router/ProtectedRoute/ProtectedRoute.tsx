@@ -1,6 +1,6 @@
 import { Alert, Box, CircularProgress } from "@mui/material";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "../../features/auth/context/AuthContext";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 
 export function ProtectedRoute() {
   const { user, loading, error } = useAuth();

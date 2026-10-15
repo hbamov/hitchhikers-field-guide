@@ -1,6 +1,6 @@
 import { Button, Stack, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import { notFoundMessages } from "./notFoundMessages";
+import { notFoundMessages } from "./messages/notFoundMessages";
 
 export function NotFoundPage() {
   return (

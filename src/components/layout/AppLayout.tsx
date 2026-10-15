@@ -16,7 +16,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { LoungeChatProvider } from "../../features/loungeChat/context/LoungeChatContext";
-import { LoungeChatDock } from "../../features/loungeChat/components/LoungeChatDock";
+import { LoungeChatDock } from "../../features/loungeChat/components/LoungeChatDock/LoungeChatDock";
 
 export function AppLayout() {
   const { user, signOutUser } = useAuth();

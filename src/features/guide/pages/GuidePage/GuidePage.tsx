@@ -12,12 +12,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { GuideCard } from "../components/GuideCard";
-import { GuideCardSkeleton } from "../components/GuideCardSkeleton/GuideCardSkeleton";
-import type { GuideCategory, GuideEntry } from "../types/guide.types";
-import { useGuideEntries } from "../hooks/useGuideEntries";
-import { useAuth } from "../../auth/context/AuthContext";
-import { useCreateTravelTaskFromGuide } from "../../travelTasks/hooks/useCreateTravelTaskFromGuide";
+import { GuideCard } from "../../components/GuideCard/GuideCard";
+import { GuideCardSkeleton } from "../../components/GuideCardSkeleton/GuideCardSkeleton";
+import type { GuideCategory, GuideEntry } from "../../types/guide.types";
+import { useGuideEntries } from "../../hooks/useGuideEntries";
+import { useAuth } from "../../../auth/context/AuthContext";
+import { useCreateTravelTaskFromGuide } from "../../../travelTasks/hooks/useCreateTravelTaskFromGuide";
 
 type CategoryFilter = "all" | GuideCategory;
 

@@ -12,15 +12,15 @@ import {
   Snackbar,
 } from "@mui/material";
 import { Plus } from "lucide-react";
-import { useAuth } from "../../auth/context/AuthContext";
-import { useTravelTasks } from "../hooks/useTravelTasks";
-import { useUpdateTravelTask } from "../hooks/useUpdateTravelTask";
-import { TravelTaskCard } from "../components/TravelTaskCard/TravelTaskCard";
-import { CreateTravelTaskDialog } from "../components/CreateTravelTaskDialog/CreateTravelTaskDialog";
-import { EditTravelTaskDialog } from "../components/EditTravelTaskDialog/EditTravelTaskDialog";
-import { DeleteTaskDialog } from "../components/DeleteTaskDialog/DeleteTaskDialog";
-import type { TaskStatus, TravelTask } from "../types/travelTask.types";
-import TravelTaskSummary from "../components/TravelTaskSummary/TravelTaskSummary";
+import { useAuth } from "../../../auth/context/AuthContext";
+import { useTravelTasks } from "../../hooks/useTravelTasks";
+import { useUpdateTravelTask } from "../../hooks/useUpdateTravelTask";
+import { TravelTaskCard } from "../../components/TravelTaskCard/TravelTaskCard";
+import { CreateTravelTaskDialog } from "../../components/CreateTravelTaskDialog/CreateTravelTaskDialog";
+import { EditTravelTaskDialog } from "../../components/EditTravelTaskDialog/EditTravelTaskDialog";
+import { DeleteTaskDialog } from "../../components/DeleteTaskDialog/DeleteTaskDialog";
+import type { TaskStatus, TravelTask } from "../../types/travelTask.types";
+import TravelTaskSummary from "../../components/TravelTaskSummary/TravelTaskSummary";
 
 type StatusFilter = "all" | TaskStatus;
 

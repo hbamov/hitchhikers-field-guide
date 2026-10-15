@@ -11,9 +11,9 @@ import {
 } from "@mui/material";
 import { ChevronDown, ChevronUp, MessageCircle, Send } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useAuth } from "../../auth/context/AuthContext";
-import { useLoungeChat } from "../context/LoungeChatContext";
-import { CHAT_MESSAGE_MAX } from "../types/chat.types";
+import { useAuth } from "../../../auth/context/AuthContext";
+import { useLoungeChat } from "../../context/LoungeChatContext";
+import { CHAT_MESSAGE_MAX } from "../../types/chat.types";
 
 export const LOUNGE_NAME = "The Restaurant at the End of the Universe";
 

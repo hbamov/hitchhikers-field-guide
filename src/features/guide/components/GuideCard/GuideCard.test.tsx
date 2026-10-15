@@ -1,8 +1,8 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { makeGuideEntry } from "../../../test/factories";
-import { renderWithProviders } from "../../../test/renderWithProviders";
+import { makeGuideEntry } from "../../../../test/factories";
+import { renderWithProviders } from "../../../../test/renderWithProviders";
 import { GuideCard } from "./GuideCard";
 
 const entry = makeGuideEntry({
@@ -18,8 +18,12 @@ describe("GuideCard", () => {
   it("shows the entry name, summary, category and readable classification", () => {
     renderWithProviders(<GuideCard entry={entry} onAddToChecklist={vi.fn()} />);
 
-    expect(screen.getByRole("heading", { name: "Babel Fish" })).toBeInTheDocument();
-    expect(screen.getByText(/small yellow leech-like fish/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Babel Fish" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/small yellow leech-like fish/i),
+    ).toBeInTheDocument();
     expect(screen.getByText("species")).toBeInTheDocument();
     expect(screen.getByText("Legendary")).toBeInTheDocument();
   });
@@ -28,13 +32,19 @@ describe("GuideCard", () => {
     ["mostly-harmless", "Mostly harmless"],
     ["caution", "Caution advised"],
     ["unknown", "Unknown"],
-  ] as const)("labels the %s classification as '%s'", (classification, label) => {
-    renderWithProviders(
-      <GuideCard entry={{ ...entry, classification }} onAddToChecklist={vi.fn()} />,
-    );
+  ] as const)(
+    "labels the %s classification as '%s'",
+    (classification, label) => {
+      renderWithProviders(
+        <GuideCard
+          entry={{ ...entry, classification }}
+          onAddToChecklist={vi.fn()}
+        />,
+      );
 
-    expect(screen.getByText(label)).toBeInTheDocument();
-  });
+      expect(screen.getByText(label)).toBeInTheDocument();
+    },
+  );
 
   it("shows at most three tags", () => {
     renderWithProviders(<GuideCard entry={entry} onAddToChecklist={vi.fn()} />);
@@ -46,10 +56,9 @@ describe("GuideCard", () => {
   it("links to the full entry page", () => {
     renderWithProviders(<GuideCard entry={entry} onAddToChecklist={vi.fn()} />);
 
-    expect(screen.getByRole("link", { name: "View full entry" })).toHaveAttribute(
-      "href",
-      "/guide/babel-fish",
-    );
+    expect(
+      screen.getByRole("link", { name: "View full entry" }),
+    ).toHaveAttribute("href", "/guide/babel-fish");
   });
 
   it("adds the entry to the checklist when the button is clicked", async () => {

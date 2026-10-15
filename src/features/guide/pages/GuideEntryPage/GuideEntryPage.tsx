@@ -22,10 +22,13 @@ import {
 } from "lucide-react";
 import { Link as RouterLink, useParams } from "react-router-dom";
 import { useState } from "react";
-import { useGuideEntry } from "../hooks/useGuideEntry";
-import type { GuideCategory, GuideClassification } from "../types/guide.types";
-import { useAuth } from "../../auth/context/AuthContext";
-import { useCreateTravelTaskFromGuide } from "../../travelTasks/hooks/useCreateTravelTaskFromGuide";
+import { useGuideEntry } from "../../hooks/useGuideEntry";
+import type {
+  GuideCategory,
+  GuideClassification,
+} from "../../types/guide.types";
+import { useAuth } from "../../../auth/context/AuthContext";
+import { useCreateTravelTaskFromGuide } from "../../../travelTasks/hooks/useCreateTravelTaskFromGuide";
 
 const categoryIcons: Record<GuideCategory, typeof Globe2> = {
   planet: Globe2,
