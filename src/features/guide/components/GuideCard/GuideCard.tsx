@@ -47,7 +47,7 @@ export function GuideCard({
     <Card
       sx={{
         height: "100%",
-        borderColor: "rgba(255,255,255,0.12)",
+        borderColor: classification.color,
         transition: "border-color 200ms ease",
         "&:hover": { borderColor: "rgba(255,255,255,0.28)" },
       }}

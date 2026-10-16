@@ -371,7 +371,13 @@ export function DashboardPage() {
         </Card>
 
         {/* Live lounge card */}
-        <Card sx={{ gridColumn: "1 / -1" }}>
+        <Card
+          sx={{
+            gridColumn: "1 / -1",
+            borderTop: "3px solid",
+            borderTopColor: "secondary.main",
+          }}
+        >
           <CardActionArea onClick={openChat} aria-label="Open the lounge chat">
             <CardContent sx={{ p: 3 }}>
               <Stack
@@ -439,10 +445,7 @@ export function DashboardPage() {
       </Box>
 
       <Typography variant="caption" color="text.secondary">
-        {dashboardMessages.accountSummary(
-          user?.email || "Unknown",
-          user?.role || "User",
-        )}
+        {dashboardMessages.accountSummary(user?.email || "Unknown")}
       </Typography>
     </Stack>
   );

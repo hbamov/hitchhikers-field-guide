@@ -16,8 +16,7 @@ export const dashboardMessages = {
       "When task management arrives, this is where your packing list will appear.",
   },
 
-  accountSummary: (email: string, role: string) =>
-    `You are signed in as ${email} · role: ${role}`,
+  accountSummary: (email: string) => `You are signed in as ${email}`,
 
   defaultDisplayName: "Traveler",
 } as const;

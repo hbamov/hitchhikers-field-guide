@@ -10,6 +10,7 @@ import {
   ToggleButtonGroup,
   Typography,
   Snackbar,
+  alpha,
 } from "@mui/material";
 import { Plus } from "lucide-react";
 import { useAuth } from "../../../auth/context/AuthContext";
@@ -116,6 +117,32 @@ export function TravelTasksPage() {
         }}
         size="small"
         aria-label="Task status filter"
+        sx={{
+          alignSelf: "flex-start",
+          p: 0.5,
+          gap: 0.5,
+          borderRadius: 999,
+          bgcolor: "action.hover",
+          border: "1px solid rgba(255,255,255,.12)",
+          "& .MuiToggleButtonGroup-grouped": {
+            border: 0,
+            borderRadius: "999px !important",
+            m: 0,
+            px: 2,
+            textTransform: "none",
+            fontWeight: 600,
+            color: "text.secondary",
+            "&:not(:first-of-type)": { ml: 0, borderLeft: 0 },
+            "&:hover": { color: "text.primary" },
+            "&.Mui-selected": {
+              color: "primary.main",
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.18),
+              "&:hover": {
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.26),
+              },
+            },
+          },
+        }}
       >
         <ToggleButton value="all">All</ToggleButton>
         <ToggleButton value="open">Open</ToggleButton>
