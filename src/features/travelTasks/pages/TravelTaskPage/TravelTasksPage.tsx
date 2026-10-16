@@ -174,7 +174,7 @@ export function TravelTasksPage() {
             : "No items match this filter."}
         </Alert>
       ) : (
-        <Stack spacing={1.5}>
+        <Stack spacing={3}>
           {filteredTasks.map((task) => (
             <TravelTaskCard
               key={task.id}

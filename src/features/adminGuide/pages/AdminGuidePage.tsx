@@ -93,7 +93,7 @@ export function AdminGuidePage() {
       ) : (
         <Stack
           component="ul"
-          spacing={1.25}
+          spacing={3}
           sx={{ listStyle: "none", m: 0, p: 0 }}
         >
           {sortedEntries.map((entry) => {

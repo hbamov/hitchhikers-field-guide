@@ -130,7 +130,7 @@ export function DashboardPage() {
         sx={{
           display: "grid",
           gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-          gap: 2,
+          gap: 3,
         }}
       >
         {/* Featured destination */}
@@ -212,9 +212,14 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Checklist preview */}
         {/* Checklist Preview */}
-        <Card sx={{ borderTop: "3px solid", borderTopColor: "primary.main" }}>
+        <Card
+          sx={{
+            borderTop: "4px solid",
+            borderTopColor: "primary.main",
+            marginTop: { xs: "8px", sm: 0 },
+          }}
+        >
           <CardContent sx={{ p: 3 }}>
             <Stack
               direction="row"
@@ -310,7 +315,7 @@ export function DashboardPage() {
                           py: 1,
                           borderRadius: 2,
                           bgcolor: "action.hover",
-                          borderLeft: `3px solid ${priority.color}`,
+                          borderLeft: `4px solid ${priority.color}`,
                         }}
                       >
                         <Box
@@ -374,8 +379,9 @@ export function DashboardPage() {
         <Card
           sx={{
             gridColumn: "1 / -1",
-            borderTop: "3px solid",
-            borderTopColor: "secondary.main",
+            borderLeft: "4px solid",
+            borderLeftColor: "secondary.main",
+            marginTop: { xs: "8px", sm: 0 },
           }}
         >
           <CardActionArea onClick={openChat} aria-label="Open the lounge chat">

@@ -213,7 +213,7 @@ export function GuidePage() {
           <Box
             sx={{
               display: "grid",
-              gap: 2,
+              gap: 3,
               gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
             }}
           >
