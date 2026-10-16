@@ -6,15 +6,18 @@ import {
   CardActionArea,
   CardContent,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
   Skeleton,
   Stack,
   Typography,
   alpha,
+  LinearProgress,
 } from "@mui/material";
-import { ShieldAlert, Sparkles, MessagesSquare } from "lucide-react";
+import {
+  ShieldAlert,
+  Sparkles,
+  MessagesSquare,
+  CalendarDays,
+} from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useMemo } from "react";
 import { useAuth } from "../../features/auth/context/AuthContext";
@@ -30,6 +33,11 @@ import {
 } from "../../features/guide/utils/guideDisplay";
 
 const PREVIEW_LIMIT = 3;
+const PRIORITY_META = {
+  high: { label: "High priority", color: "#ef5350" },
+  medium: { label: "Medium priority", color: "#ffb300" },
+  low: { label: "Low priority", color: "#4caf8a" },
+} as const;
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -72,6 +80,23 @@ export function DashboardPage() {
   } = useLoungeChat();
 
   const latestMessages = chatMessages.slice(-3);
+
+  const startOfToday = () => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  };
+
+  const formatDueDate = (date: Date) => {
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const completedCount = tasks.length - openTasks.length;
+  const progress =
+    tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
+  const today = startOfToday();
 
   return (
     <Stack spacing={3}>
@@ -188,18 +213,40 @@ export function DashboardPage() {
         </Card>
 
         {/* Checklist preview */}
-        <Card>
+        {/* Checklist Preview */}
+        <Card sx={{ borderTop: "3px solid", borderTopColor: "primary.main" }}>
           <CardContent sx={{ p: 3 }}>
             <Stack
               direction="row"
               spacing={1}
               alignItems="center"
-              color="primary.main"
+              justifyContent="space-between"
             >
-              <Sparkles size={20} />
-              <Typography variant="overline">
-                {dashboardMessages.checklist.title}
-              </Typography>
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                color="primary.main"
+              >
+                <Sparkles size={20} />
+                <Typography variant="overline">
+                  {dashboardMessages.checklist.title}
+                </Typography>
+              </Stack>
+
+              {!tasksLoading && !tasksError && tasks.length > 0 ? (
+                <Chip
+                  size="small"
+                  label={`${completedCount} of ${tasks.length} done`}
+                  sx={{
+                    fontWeight: 600,
+                    color: "primary.main",
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.14),
+                    border: (theme) =>
+                      `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
+                  }}
+                />
+              ) : null}
             </Stack>
 
             {tasksLoading ? (
@@ -231,13 +278,84 @@ export function DashboardPage() {
                   {openTasks.length} {openTasks.length === 1 ? "item" : "items"}{" "}
                   remaining
                 </Typography>
-                <List dense disablePadding sx={{ mt: 1 }}>
-                  {previewTasks.map((task) => (
-                    <ListItem key={task.id} disableGutters>
-                      <ListItemText primary={task.title} />
-                    </ListItem>
-                  ))}
-                </List>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={progress}
+                  aria-label="Checklist progress"
+                  sx={{ mt: 1.5, height: 6, borderRadius: 3 }}
+                />
+
+                <Stack
+                  component="ul"
+                  spacing={0.75}
+                  sx={{ mt: 2, p: 0, listStyle: "none" }}
+                >
+                  {previewTasks.map((task) => {
+                    const priority =
+                      PRIORITY_META[task.priority] ?? PRIORITY_META.medium;
+                    const due =
+                      task.dueDate instanceof Date ? task.dueDate : null;
+                    const overdue = due !== null && due < today;
+
+                    return (
+                      <Box
+                        component="li"
+                        key={task.id}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.25,
+                          px: 1.5,
+                          py: 1,
+                          borderRadius: 2,
+                          bgcolor: "action.hover",
+                          borderLeft: `3px solid ${priority.color}`,
+                        }}
+                      >
+                        <Box
+                          role="img"
+                          aria-label={priority.label}
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            flexShrink: 0,
+                            borderRadius: "50%",
+                            bgcolor: priority.color,
+                          }}
+                        />
+                        <Typography
+                          variant="body2"
+                          noWrap
+                          sx={{ flexGrow: 1, minWidth: 0 }}
+                        >
+                          {task.title}
+                        </Typography>
+                        {due ? (
+                          <Chip
+                            size="small"
+                            icon={<CalendarDays size={13} />}
+                            label={
+                              overdue
+                                ? `Overdue · ${formatDueDate(due)}`
+                                : formatDueDate(due)
+                            }
+                            sx={{
+                              flexShrink: 0,
+                              fontWeight: 600,
+                              color: overdue ? "#ef5350" : "text.secondary",
+                              bgcolor: overdue
+                                ? alpha("#ef5350", 0.14)
+                                : "transparent",
+                              border: `1px solid ${overdue ? alpha("#ef5350", 0.4) : "rgba(255,255,255,.16)"}`,
+                              "& .MuiChip-icon": { color: "inherit" },
+                            }}
+                          />
+                        ) : null}
+                      </Box>
+                    );
+                  })}
+                </Stack>
               </>
             )}
 
