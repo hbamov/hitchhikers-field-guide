@@ -10,7 +10,7 @@ import {
   Chip,
   Box,
 } from "@mui/material";
-import { Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useGuideEntries } from "../../guide/hooks/useGuideEntries";
 import type { GuideEntry } from "../../guide/types/guide.types";
@@ -180,13 +180,37 @@ export function AdminGuidePage() {
                   </Stack>
 
                   <Stack direction="row" spacing={1}>
-                    <Button size="small" onClick={() => openEdit(entry)}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Pencil size={14} />}
+                      onClick={() => openEdit(entry)}
+                      sx={{
+                        borderColor: "warning.main",
+                        color: "warning.main",
+                        "&:hover": {
+                          borderColor: "warning.light",
+                          bgcolor: (theme) =>
+                            alpha(theme.palette.warning.main, 0.12),
+                        },
+                      }}
+                    >
                       Edit
                     </Button>
                     <Button
                       size="small"
-                      color="error"
+                      variant="outlined"
+                      startIcon={<Trash2 size={14} />}
                       onClick={() => setDeletingEntry(entry)}
+                      sx={{
+                        borderColor: "error.main",
+                        color: "error.main",
+                        "&:hover": {
+                          borderColor: "error.light",
+                          bgcolor: (theme) =>
+                            alpha(theme.palette.error.main, 0.12),
+                        },
+                      }}
                     >
                       Delete
                     </Button>

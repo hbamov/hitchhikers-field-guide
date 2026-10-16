@@ -8,7 +8,7 @@ import {
   Typography,
   alpha,
 } from "@mui/material";
-import { CalendarDays, Flag } from "lucide-react";
+import { CalendarDays, Flag, Trash2, Pencil } from "lucide-react";
 import type { TravelTask } from "../../types/travelTask.types";
 import { COMPLETED_COLOR, getPriorityMeta } from "../../utils/priority";
 
@@ -133,15 +133,36 @@ export function TravelTaskCard({
             </Stack>
           </Stack>
 
-          <Stack direction="row" spacing={1} sx={{ pl: { xs: 5, sm: 0 } }}>
-            <Button size="small" onClick={() => onEdit(task)} disabled={busy}>
+          <Stack direction="row" spacing={1}>
+            <Button
+              onClick={() => onEdit(task)}
+              variant="outlined"
+              size="small"
+              startIcon={<Pencil size={14} />}
+              sx={{
+                borderColor: "warning.main",
+                color: "warning.main",
+                "&:hover": {
+                  borderColor: "warning.light",
+                  bgcolor: (theme) => alpha(theme.palette.warning.main, 0.12),
+                },
+              }}
+            >
               Edit
             </Button>
             <Button
-              size="small"
-              color="error"
               onClick={() => onDelete(task)}
-              disabled={busy}
+              variant="outlined"
+              size="small"
+              startIcon={<Trash2 size={14} />}
+              sx={{
+                borderColor: "error.main",
+                color: "error.main",
+                "&:hover": {
+                  borderColor: "error.light",
+                  bgcolor: (theme) => alpha(theme.palette.error.main, 0.12),
+                },
+              }}
             >
               Delete
             </Button>
